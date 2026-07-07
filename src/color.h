@@ -17,7 +17,7 @@ enum Code
     BG_BLUE = 44,
     BG_MAGENTA = 45,
     BG_CYAN = 46,
-    BG_LIGHT_GRAY = 47, // 实际是白色，终端为正常显示会进行调整
+    BG_LIGHT_GRAY = 47, // Actually white; terminals may adjust rendering for normal display
     BG_DEFAULT = 49,
     
     

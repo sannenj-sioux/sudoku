@@ -33,7 +33,7 @@ void CScene::show() const
 
     printUnderline();
 
-    // 获取光标位置的数字值（若光标在有效位置）
+    // Get the number at the cursor position (if cursor is within bounds)
     int highlighted_num = UNSELECTED;
     if (_cur_point.y >= 0 && _cur_point.y < _max_column) {
         const CBlock& cursor_block = _row_block[_cur_point.y];
@@ -148,7 +148,7 @@ void CScene::setValue(const int value)
     this->setValue(p, value);
 }
 
-// 选择count个格子清空
+// Clear `count` random cells
 void CScene::eraseRandomGrids(const int count)
 {
     point_value_t p = {UNSELECTED, State::ERASED};
@@ -167,14 +167,14 @@ void CScene::eraseRandomGrids(const int count)
 
 bool CScene::isComplete()
 {
-    // 任何一个block未被填满，则肯定未完成
+    // If any block is not fully filled, the puzzle is not complete
     for (size_t i = 0; i < 81; ++i)
     {
         if (_map[i].value == UNSELECTED)
             return false;
     }
 
-    // 同时block里的数字还要符合规则
+    // Numbers in each block must also satisfy Sudoku rules
     for (int row = 0; row < 9; ++row)
     {
         for (int col = 0; col < 9; ++col)
@@ -190,10 +190,14 @@ bool CScene::isComplete()
 }
 
 bool CScene::save(const char *filename) {
-  auto filepath = std::filesystem::path(filename);
-  if (std::filesystem::exists(filepath)) {
-    return false;
-  }
+    {
+        std::fstream fs;
+        fs.open(filename, std::fstream::in);
+        if (fs.is_open()) {
+            fs.close();
+            return false;
+        }
+    }
 
     std::fstream fs;
     fs.open(filename, std::fstream::in | std::fstream::out | std::fstream::app);
@@ -341,14 +345,14 @@ void CScene::play()
     }
 }
 
-// 一个场景可以多次被初始化
+// A scene can be initialized multiple times
 void CScene::generate()
 {
     std::vector<std::vector<int>> matrix;
     for (int i = 0; i < 9; i++)
         matrix.push_back(std::vector<int>(9, 0));
 
-    // 初始化三个nuit
+    // Initialize three 3x3 units
     // 2 6 5 | 0 0 0 | 0 0 0
     // 3 4 1 | 0 0 0 | 0 0 0
     // 8 9 7 | 0 0 0 | 0 0 0
@@ -372,14 +376,14 @@ void CScene::generate()
             }
     }
 
-    // 统计空格数量
+    // Count empty cells
     std::vector<std::tuple<int, int>> box_list;
     for (int i = 0; i < 9; i++)
         for (int j = 0; j < 9; j++)
             if (matrix[i][j] == 0)
                 box_list.push_back(std::make_tuple(i, j));
 
-    // 逐个填充空格
+    // Fill empty cells one by one
     std::map<std::string, std::vector<int>> available_num {};
     int full_num = 0;
     int empty_num = static_cast<int>(box_list.size());
@@ -392,18 +396,18 @@ void CScene::generate()
         std::string key = std::to_string(row) + "x" + std::to_string(col);
         if (available_num.find(key) == available_num.end())
         {
-            // 九宫格
+            // 3x3 box
             able_unit = get_unit();
             for(int i=row/3*3; i<row/3*3+3; i++){
                 for(int j=col/3*3; j<col/3*3+3; j++){
                     able_unit.erase(std::remove(able_unit.begin(), able_unit.end(), matrix[i][j]), able_unit.end());
                 }
             }
-            // 行
+            // Row
             for (int i = 0; i < 9; i++)
                 if (matrix[row][i] != 0)
                     able_unit.erase(std::remove(able_unit.begin(), able_unit.end(), matrix[row][i]), able_unit.end());
-            // 列
+            // Column
             for (int i = 0; i < 9; i++)
                 if (matrix[i][col] != 0)
                     able_unit.erase(std::remove(able_unit.begin(), able_unit.end(), matrix[i][col]), able_unit.end());
@@ -414,7 +418,7 @@ void CScene::generate()
             able_unit = available_num[key];
         }
 
-        // 如果没有可用的数字，则回溯
+        // Backtrack if there is no available number
         if (available_num[key].size() <= 0)
         {
             full_num -= 1;
@@ -432,7 +436,7 @@ void CScene::generate()
 
     }
 
-    // 填入场景
+    // Write generated values into the scene
     for (int row = 0; row < 9; ++row)
     {
         for (int col = 0; col < 9; ++col)

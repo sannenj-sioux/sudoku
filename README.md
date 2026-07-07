@@ -1,74 +1,74 @@
 # sudoku
-C++ 实现的跨平台数独游戏，命令行操作易上手，可以在开发间隙用来放松身心。数百行代码，初学者也可以轻松掌握。
-欢迎通过pull request的方式来添加功能或修复缺陷。
+A cross-platform Sudoku game implemented in C++, with beginner-friendly command-line controls. It is great for relaxing during short development breaks. The codebase is only a few hundred lines, so beginners can understand it easily.
+Contributions are welcome through pull requests for new features or bug fixes.
 
-## 感谢贡献者
+## Thanks To Contributors
 <a href="https://github.com/mayerui/sudoku/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=mayerui/sudoku" />
 </a>
 
-## 特性
-1. 跨平台/编译器 : Linux/Windows/macOS [![Linux](https://github.com/mayerui/sudoku/actions/workflows/ci-linux.yml/badge.svg)](https://github.com/mayerui/sudoku/actions/workflows/ci-linux.yml) [![Windows](https://github.com/mayerui/sudoku/actions/workflows/ci-windows.yml/badge.svg)](https://github.com/mayerui/sudoku/actions/workflows/ci-windows.yml) [![macOS](https://github.com/mayerui/sudoku/actions/workflows/ci-macos.yml/badge.svg)](https://github.com/mayerui/sudoku/actions/workflows/ci-macos.yml)
-2. 多语言：English/中文
-3. 无第三方库依赖
-4. 控制台运行
+## Features
+1. Cross-platform / compiler support: Linux/Windows/macOS [![Linux](https://github.com/mayerui/sudoku/actions/workflows/ci-linux.yml/badge.svg)](https://github.com/mayerui/sudoku/actions/workflows/ci-linux.yml) [![Windows](https://github.com/mayerui/sudoku/actions/workflows/ci-windows.yml/badge.svg)](https://github.com/mayerui/sudoku/actions/workflows/ci-windows.yml) [![macOS](https://github.com/mayerui/sudoku/actions/workflows/ci-macos.yml/badge.svg)](https://github.com/mayerui/sudoku/actions/workflows/ci-macos.yml)
+2. Multilingual support: English/Chinese
+3. No third-party library dependencies
+4. Runs in the console
 
-## 依赖
-1. cmake 3.12及以上
+## Requirements
+1. cmake 3.12+
 2. C++17
 
-## 构建
+## Build
 ``` shell
 cmake -B build -S .
 cmake --build build
 ```
 
-## 运行
-构建步骤生成的 `sudoku` 可执行文件在 `bin` 目录下
+## Run
+The build step generates the `sudoku` executable in the `bin` directory.
 ``` shell
-./sudoku  # 直接启动
-./sudoku -l filename  # 读取游戏进度文件
-./sudoku -h  # 获取帮助信息
+./sudoku  # Start directly
+./sudoku -l filename  # Load a saved game progress file
+./sudoku -h  # Show help information
 ```
 
-## 操作说明
-- 0 删除已填入数字
-- u 撤销上一步操作
-- enter 尝试通关
-- esc 退出游戏
+## Controls
+- 0 Delete an entered number
+- u Undo the previous action
+- enter Try to complete the puzzle
+- esc Exit the game
 
-### 普通模式
-- w 光标上移↑
-- a 光标左移←
-- s 光标下移↓
-- d 光标右移→
+### Normal Mode
+- w Move cursor up ↑
+- a Move cursor left ←
+- s Move cursor down ↓
+- d Move cursor right →
 
-### VIM模式
-- k 光标上移↑
-- h 光标左移←
-- j 光标下移↓
-- l 光标右移→
+### Vim Mode
+- k Move cursor up ↑
+- h Move cursor left ←
+- j Move cursor down ↓
+- l Move cursor right →
 
-## 项目结构
+## Project Structure
 ```bash
 │--.gitignore  
-│--build.bat        // Windows 一键编译脚本  
-│--build.sh         // Linux/macOS 一键编译脚本  
-│--CMakeLists.txt   // CMake 项目文件  
+│--build.bat        // One-click build script for Windows  
+│--build.sh         // One-click build script for Linux/macOS  
+│--CMakeLists.txt   // CMake project file  
 │--README.md     
-└--src              // 源代码目录  
-   │--block.cpp     // 数独格子组合类，可代表行、列、九宫格  
+└--src              // Source code directory  
+  │--block.cpp     // Sudoku block combination class; can represent rows, columns, and 3x3 boxes  
    │--block.h  
-   │--color.h       // 颜色类  
-   │--command.cpp   // 命令类，实现了撤销功能  
+  │--color.h       // Color class  
+  │--command.cpp   // Command class with undo support  
    │--command.h     
-   │--common.h      // 公共头文件  
-   │--input.cpp     // 输入类  
+  │--common.h      // Shared header file  
+  │--input.cpp     // Input class  
    │--input.h   
-   │--main.cpp      // 入口文件  
-   │--scene.cpp     // 游戏场景类  
+  │--main.cpp      // Entry point  
+  │--scene.cpp     // Game scene class  
    │--scene.h   
-   │--test.cpp      // 测试文件  
+  │--test.cpp      // Test file  
    │--test.h  
-   └--utility.inl   // 一些实用的全局函数  
+  └--utility.inl   // Some useful global utility functions  
 ```

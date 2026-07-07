@@ -80,7 +80,7 @@ void test_complete_check_performance() {
 
   for (int i = 0; i < iterations; ++i) {
     auto start = high_resolution_clock::now();
-    bool result = scene.isComplete();
+    scene.isComplete();
     auto end = high_resolution_clock::now();
 
     duration<double, nano> duration = end - start;

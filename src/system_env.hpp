@@ -14,7 +14,7 @@ inline void SetWindowsEnv() {
 
 inline void SetSystemEnv() {
   SetWindowsEnv();
-  // 禁用输出缓冲，加快输出速度，减少卡顿
+  // Disable output buffering to improve output speed and reduce stutter
   std::ios::sync_with_stdio(false);
   std::cin.tie(nullptr);
   std::cout.tie(nullptr);

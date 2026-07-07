@@ -3,7 +3,7 @@
 
 #include "common.h"
 
-// 数独行政区域类
+// Sudoku region class
 class CBlock
 {
     static const int MAX_COUNT = 9;

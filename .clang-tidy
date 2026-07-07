@@ -10,6 +10,8 @@ Checks: '
 
 WarningsAsErrors: ''
 HeaderFilterRegex: ''
+ExtraArgs:
+  - '-std=c++17'
 
 FormatStyle: file
 

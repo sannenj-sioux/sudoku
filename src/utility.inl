@@ -56,20 +56,20 @@ inline void message(const std::string& msg, bool lf = true) {
         int c;
         int fd = 0;
         if (tcgetattr(fd, &tm) != 0)
-        { /*获取当前的终端属性设置，并保存到tm结构体中*/
+        { /*Get current terminal attributes and store them in `tm`*/
             return -1;
         }
         tmtemp = tm;
-        cfmakeraw(&tmtemp); /*将tetemp初始化为终端原始模式的属性设置*/
+        cfmakeraw(&tmtemp); /*Initialize `tmtemp` with raw terminal mode settings*/
         if (tcsetattr(fd, TCSANOW, &tmtemp) != 0)
-        { /*将终端设置为原始模式的设置*/
+        { /*Apply raw mode settings to terminal*/
             return -1;
         }
         c = getchar();
-        if (c == 27)  /* ESC返回27，上下左右为(27,91,xx) 与ESC的27冲突 */
+        if (c == 27)  /* ESC is 27; arrow keys are (27,91,xx), which conflicts with ESC */
         {
             int back_flags = fcntl(fd, F_GETFL);
-            /*将fd设置为非阻塞的，没有输入时可以立即返回*/
+            /*Set fd to non-blocking so it returns immediately when there is no input*/
             fcntl(fd, F_SETFL, back_flags | O_NONBLOCK);
             c = getchar();
             if (c == EOF)
@@ -85,7 +85,7 @@ inline void message(const std::string& msg, bool lf = true) {
             fcntl(fd, F_SETFL, back_flags);
         }
         if (tcsetattr(fd, TCSANOW, &tm) != 0)
-        { /*接收字符完毕后将终端设置回原来的属性*/
+        { /*Restore terminal attributes after reading a character*/
             return 0;
         }
         return static_cast<char>(c);
@@ -96,7 +96,7 @@ inline void message(const std::string& msg, bool lf = true) {
 
 inline void cls(void)
 {
-    // 使用 ANSI 转义序列清屏，比 system("cls") 更高效，减少闪烁
+    // Clear screen using ANSI escape sequence; faster and less flicker than system("cls")
     std::cout << "\033[H\033[J";
 }
 

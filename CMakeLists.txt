@@ -2,8 +2,12 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.12) # cmake最低版本要求
 
 PROJECT(sudoku)    # 工程名 CppTemplate
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+option(SUDOKU_SKIP_COMPILE_DB_REFRESH "Skip nested compile_commands refresh target" OFF)
+
 set(CMAKE_CXX_STANDARD 17) # C++17标准
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 SET(CMAKE_BUILD_TYPE "Debug")  # Debug模式 选项: Release Debug MinSizeRel RelWithDebInfo
 # 针对不同模式设置编译选项
@@ -52,3 +56,14 @@ endif()
 # 添加子目录
 add_subdirectory(src)
 add_subdirectory(tests)
+
+# Visual Studio generators don't emit compile_commands.json directly.
+# Keep a CMake-native refresh target in ALL so clangd DB stays updated with normal builds.
+if(CMAKE_GENERATOR MATCHES "Visual Studio" AND NOT SUDOKU_SKIP_COMPILE_DB_REFRESH)
+  add_custom_target(refresh_compile_commands ALL
+    COMMAND ${CMAKE_COMMAND} -S ${PROJECT_SOURCE_DIR} -B ${PROJECT_BINARY_DIR}/clangd-db -G "NMake Makefiles" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DSUDOKU_SKIP_COMPILE_DB_REFRESH=ON
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PROJECT_BINARY_DIR}/clangd-db/compile_commands.json ${PROJECT_BINARY_DIR}/compile_commands.json
+    COMMENT "Refreshing compile_commands.json for clangd"
+    VERBATIM
+  )
+endif()

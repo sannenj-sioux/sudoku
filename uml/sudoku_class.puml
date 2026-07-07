@@ -1,0 +1,242 @@
+@startuml
+enum "Difficulty" as C_0014140928745378907216
+enum C_0014140928745378907216 {
+EASY
+NORMAL
+HARD
+}
+enum "State" as C_0012548033600169640822
+enum C_0012548033600169640822 {
+INITED
+ERASED
+}
+enum "KeyMode" as C_0015576738237064286415
+enum C_0015576738237064286415 {
+NORMAL
+VIM
+}
+class "KeyMap" as C_0001577280711521442322
+class C_0001577280711521442322 {
+__
++DOWN : char
++ENTER : const char
++ESC : const char
++LEFT : char
++RIGHT : char
++U : const char
++UP : char
+}
+class "Normal" as C_0011525575787956178258
+class C_0011525575787956178258 {
++Normal() : void
+__
+}
+class "Vim" as C_0008902529157604332855
+class C_0008902529157604332855 {
++Vim() : void
+__
+}
+class "point_t" as C_0006605295246263958522
+class C_0006605295246263958522 {
+__
++x : int
++y : int
+}
+class "point_value_t" as C_0012873921550621665616
+class C_0012873921550621665616 {
+__
++state : State
++value : int
+}
+class "CPointSort" as C_0006420790171117861728
+class C_0006420790171117861728 {
++operator()(const point_t & lhs, const point_t & rhs) const : bool
+__
+}
+class "CBlock" as C_0004259552449989326327
+class C_0004259552449989326327 {
++CBlock() : void
+..
++getNumberValue(int index) const : int
++isFull() const : bool
++isValid() const : bool
++print(int cur_point = -1, int highlighted_num = '0') const : void
++push_back(point_value_t * point) : void
+__
+{static} -MAX_COUNT : const int
+-_count : int
+-_numbers : point_value_t *[9]
+}
+class "std::vector<CCommand>" as C_0000778261534352271285
+class C_0000778261534352271285 {
+__
+}
+class "std::char_traits<char>" as C_0007500688229146332176
+class C_0007500688229146332176 {
+__
+}
+class "std::allocator<char>" as C_0000465838628272370621
+class C_0000465838628272370621 {
+__
+}
+class "std::string" as C_0005016775666417918015
+class C_0005016775666417918015 {
+__
+}
+class "std::map<I18n::Key,std::string>" as C_0017837217748139968203
+class C_0017837217748139968203 {
+__
+}
+enum "Color::Code" as C_0006593221852075368801
+enum C_0006593221852075368801 {
+BOLD
+RESET
+BG_BLACK
+BG_RED
+BG_GREEN
+BG_YELLOW
+BG_BLUE
+BG_MAGENTA
+BG_CYAN
+BG_LIGHT_GRAY
+BG_DEFAULT
+FG_BLACK
+FG_RED
+FG_GREEN
+FG_YELLOW
+FG_BLUE
+FG_MAGENTA
+FG_CYAN
+FG_LIGHT_GRAY
+FG_DEFAULT
+FG_DARK_GRAY
+FG_LIGHT_RED
+FG_LIGHT_GREEN
+FG_LIGHT_YELLOW
+FG_LIGHT_BLUE
+FG_LIGHT_MAGENTA
+FG_LIGHT_CYAN
+FG_WHITE
+}
+class "Color::Modifier" as C_0010533272728017906629
+class C_0010533272728017906629 {
++Modifier() : void
++Modifier(Code Mode, Code BackGround, Code FrontGround) : void
+__
+-bg : Code
+-fg : Code
+-md : Code
+}
+class "CCommand" as C_0001939824123042984499
+class C_0001939824123042984499 {
++CCommand(CScene * pOwner) : void
++CCommand(CScene * pOwner, const point_t & point, int preValue, int curValue) : void
++CCommand(const CCommand &) : void
++~CCommand() : void
+..
++execute(int nInputValue) : bool
++getCurValue() : int
++getPoint() : point_t
++getPreValue() : int
++setCurValue(int curValue) : void
++setPoint(const point_t & point) : void
++setPreValue(int preValue) : void
++undo() : void
+__
+-_nCurValue : int
+-_nPreValue : int
+-_pOwner : CScene *
+-_stPoint : point_t
+}
+class "CScene" as C_0016294622028327177442
+class C_0016294622028327177442 {
++CScene(int index = 3) : void
++~CScene() : void
+..
++eraseRandomGrids(const int count) : void
++generate() : void
++getCurPoint() : point_t
+-init() : void
++isComplete() : bool
++load(const char * filename) : bool
++play() : void
+-printUnderline(int line_no = -1) const : void
++save(const char * filename) : bool
++setCurValue(const int nCurValue, int & nLastValue) : bool
++setMode(KeyMode mode) : void
++setPointValue(const point_t &, const int) : bool
+-setValue(const int) : void
+-setValue(const point_t &, const int) : void
++show() const : void
+__
+-_column_block : CBlock[9]
+-_cur_point : point_t
+-_map : point_value_t[81]
+-_max_column : int
+-_row_block : CBlock[9]
+-_vCommand : std::vector<CCommand>
+-_xy_block : CBlock[3][3]
+-keyMap : KeyMap *
+}
+enum "Language" as C_0017280194170740603963
+enum C_0017280194170740603963 {
+ENGLISH
+CHINESE
+MAX
+}
+class "I18n" as C_0006098803878144246881
+class C_0006098803878144246881 {
+-I18n() : void
+..
++Get(Key) const : std::string
+{static} +Instance() : I18n &
++SetLanguage(Language) : void
+__
+-dict_ : Dict *
+}
+enum "I18n::Key" as C_0005470317071970115398
+enum C_0005470317071970115398 {
+ASK_KEY_MAP
+INPUT_ERROR
+LOAD_PROGRESS_FAIL
+ASK_QUIT
+ASK_SAVE
+ASK_SAVE_PATH
+FILE_EXIST_ERROR
+CONTINUE
+UNDO_ERROR
+CONGRATULATION
+NOT_COMPLETED
+ASK_DIFFICULTY
+}
+C_0001577280711521442322 <|-- C_0011525575787956178258
+C_0001577280711521442322 <|-- C_0008902529157604332855
+C_0012873921550621665616 o-- C_0012548033600169640822 : +state
+C_0006420790171117861728 ..> C_0006605295246263958522
+C_0004259552449989326327 --> "9" C_0012873921550621665616 : -_numbers
+C_0000778261534352271285 ..> C_0001939824123042984499
+C_0005016775666417918015 ..> C_0007500688229146332176
+C_0005016775666417918015 ..> C_0000465838628272370621
+C_0017837217748139968203 ..> C_0005016775666417918015
+C_0010533272728017906629 o-- C_0006593221852075368801 : -md
+C_0010533272728017906629 o-- C_0006593221852075368801 : -bg
+C_0010533272728017906629 o-- C_0006593221852075368801 : -fg
+C_0001939824123042984499 --> C_0016294622028327177442 : -_pOwner
+C_0001939824123042984499 o-- C_0006605295246263958522 : -_stPoint
+C_0016294622028327177442 ..> C_0015576738237064286415
+C_0016294622028327177442 --> C_0001577280711521442322 : -keyMap
+C_0016294622028327177442 o-- C_0006605295246263958522 : -_cur_point
+C_0016294622028327177442 o-- "9" C_0004259552449989326327 : -_column_block
+C_0016294622028327177442 o-- "9" C_0004259552449989326327 : -_row_block
+C_0016294622028327177442 o-- "9" C_0004259552449989326327 : -_xy_block
+C_0016294622028327177442 o-- "81" C_0012873921550621665616 : -_map
+C_0016294622028327177442 o-- C_0000778261534352271285 : -_vCommand
+C_0006098803878144246881 ..> C_0017280194170740603963
+C_0006098803878144246881 ..> C_0005016775666417918015
+C_0006098803878144246881 --> C_0017837217748139968203 : -dict_
+C_0006098803878144246881 --> C_0005470317071970115398 : -dict_
+C_0005470317071970115398 --+ C_0006098803878144246881
+
+'Generated with clang-uml, version 0.6.2
+'LLVM version clang version 20.1.7 (https://github.com/llvm/llvm-project.git 6146a88f60492b520a36f8f8f3231e15f3cc6082)
+@enduml

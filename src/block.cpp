@@ -53,7 +53,7 @@ void CBlock::print(int cur_point, int highlighted_num) const {
 
     if (i==cur_point) num_bgcolor = Color::BG_BLUE;
     else if (highlighted_num != UNSELECTED && number.value == highlighted_num)
-        num_bgcolor = Color::BG_YELLOW; // 与当前光标相同数字高亮为黄色
+        num_bgcolor = Color::BG_YELLOW; // Highlight numbers matching the current cursor value in yellow
     else num_bgcolor = Color::BG_DEFAULT;
     
     if (number.state == State::ERASED) num_fgcolor = Color::FG_GREEN;
@@ -82,5 +82,5 @@ int CBlock::getNumberValue(int index) const
     if (index >= 0 && index < _count) {
         return _numbers[index]->value;
     }
-    return UNSELECTED; // 或抛异常
+    return UNSELECTED; // Or throw an exception
 }

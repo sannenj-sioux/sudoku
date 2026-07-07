@@ -7,7 +7,7 @@
 #include "block.h"
 #include "command.h"
 
-//数独场景类
+// Sudoku scene class
 class CScene
 {
   public:
@@ -31,7 +31,7 @@ class CScene
     void setMode(KeyMode mode);
 
   private:
-    void init(); // 将每个格子的指针放到block里面
+    void init(); // Put each cell pointer into its corresponding block
     void setValue(const int);
     void setValue(const point_t &, const int);
     void printUnderline(int line_no = -1) const;

@@ -1,7 +1,34 @@
-# CMake
-build
-bin
-# IDE
+# CMake and build outputs
+build/
+build-*/
+bin/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+compile_commands.json
+Makefile
+
+# CTest / testing
+Testing/
+CTestTestfile.cmake
+
+# Visual Studio / MSBuild
+.vs/
+*.sln
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+*.obj
+*.pdb
+*.ilk
+*.idb
+
+# VS Code
 .vscode/settings.json
-# clang
-.cache
+
+# Clang / tooling caches
+.cache/
+
+# Generated UML outputs (if produced locally)
+uml/*.png
+uml/*.svg

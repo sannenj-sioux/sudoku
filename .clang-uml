@@ -1,0 +1,11 @@
+compilation_database_dir: build-uml
+output_directory: uml
+
+# Minimal class diagram for the Sudoku sources.
+diagrams:
+  sudoku_class:
+    type: class
+    glob:
+      - src/*.h
+      - src/*.hpp
+      - src/*.cpp
