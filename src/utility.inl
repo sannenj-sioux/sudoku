@@ -1,6 +1,8 @@
 ﻿#ifndef _SUDOKU_UTILITY_INL_
 #define _SUDOKU_UTILITY_INL_
 
+#include "common.h"
+
 #include <algorithm>
 #include <iostream>
 #include <random>
@@ -16,8 +18,8 @@ inline unsigned int RandomInt(int begin, int end)
 
 inline std::vector<int> GetUnit() {
     std::vector<int> unit;
-    unit.reserve(9);
-    for (int value = 1; value <= 9; ++value) {
+    unit.reserve(GRID_SIZE);
+    for (int value = 1; value <= GRID_SIZE; ++value) {
         unit.push_back(value);
     }
     return unit;

@@ -28,10 +28,6 @@ class CScene {
   bool load(const char* filename);
 
  private:
-  static constexpr int GRID_SIZE = 9;
-  static constexpr int BOX_SIZE = 3;
-  static constexpr int CELL_COUNT = GRID_SIZE * GRID_SIZE;
-
   void init();  // Put each cell pointer into its corresponding block
   void setValue(int);
   void setValue(const point_t&, int);

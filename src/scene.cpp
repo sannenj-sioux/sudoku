@@ -351,6 +351,7 @@ void CScene::generate() {
 
   // Count empty cells
   std::vector<std::tuple<int, int>> box_list;
+  box_list.reserve(static_cast<size_t>(CELL_COUNT));
   for (int i = 0; i < GRID_SIZE; ++i) {
     for (int j = 0; j < GRID_SIZE; ++j) {
       if (matrix[i][j] == 0) {

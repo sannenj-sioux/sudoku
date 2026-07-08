@@ -46,7 +46,7 @@ int inputDifficulty() {
 void InputLanguage() {
   std::string language;
   do {
-    Message("1English 2中文");
+    Message("Language: 1 English, 2 中文");
     std::cin >> language;
 
     try {
