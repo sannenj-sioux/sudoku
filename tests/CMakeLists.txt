@@ -37,6 +37,7 @@ set(PERFORMANCE_TEST_FILES
     ../src/command.cpp
     ../src/i18n.cpp
     ../src/input.cpp
+    ../src/puzzle_generator.cpp
     ../src/scene.cpp
     performance_test.cpp
 )
@@ -57,6 +58,7 @@ set(UNIT_TEST_FILES
     ../src/command.cpp
     ../src/i18n.cpp
     ../src/input.cpp
+    ../src/puzzle_generator.cpp
     ../src/scene.cpp
     puzzle_generation_test.cpp
 )

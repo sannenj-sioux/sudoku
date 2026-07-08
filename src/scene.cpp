@@ -14,6 +14,7 @@
 #include "common.h"
 #include "display_symbol.h"
 #include "i18n.h"
+#include "puzzle_generator.h"
 #include "utility.inl"
 
 namespace {
@@ -142,22 +143,8 @@ void CScene::setValue(int value) {
   this->setValue(point, value);
 }
 
-// Clear `count` random cells
 void CScene::eraseRandomGrids(int count) {
-  point_value_t erased_value = {UNSELECTED, State::ERASED};
-
-  std::vector<int> cell_indexes(CELL_COUNT);
-  for (int i = 0; i < CELL_COUNT; ++i) {
-    cell_indexes[i] = i;
-  }
-
-  for (int i = 0; i < count; ++i) {
-    const auto random_index =
-        static_cast<size_t>(RandomInt(0, static_cast<int>(cell_indexes.size() - 1)));
-    _board.at(static_cast<size_t>(cell_indexes.at(random_index))) = erased_value;
-    cell_indexes.erase(cell_indexes.begin() +
-                       static_cast<std::vector<int>::difference_type>(random_index));
-  }
+  PuzzleGenerator::EraseCells(_board, count);
 }
 
 bool CScene::isComplete() {
@@ -326,109 +313,8 @@ void CScene::play() {
   }
 }
 
-// A scene can be initialized multiple times
 void CScene::generate() {
-  std::vector<std::vector<int>> matrix(static_cast<size_t>(GRID_SIZE),
-                                       std::vector<int>(static_cast<size_t>(GRID_SIZE), 0));
-
-  // Initialize three 3x3 units
-  // 2 6 5 | 0 0 0 | 0 0 0
-  // 3 4 1 | 0 0 0 | 0 0 0
-  // 8 9 7 | 0 0 0 | 0 0 0
-  // ---------------------
-  // 0 0 0 | 1 9 4 | 0 0 0
-  // 0 0 0 | 8 3 6 | 0 0 0
-  // 0 0 0 | 5 2 7 | 0 0 0
-  // ---------------------
-  // 0 0 0 | 0 0 0 | 3 4 5
-  // 0 0 0 | 0 0 0 | 9 6 2
-  // 0 0 0 | 0 0 0 | 7 8 1
-  for (int num = 0; num < BOX_SIZE; ++num) {
-    std::vector<int> unit = ShuffleUnit();
-    const int start_index = num * BOX_SIZE;
-    for (int i = start_index; i < start_index + BOX_SIZE; ++i) {
-      for (int j = start_index; j < start_index + BOX_SIZE; ++j) {
-        matrix[i][j] = unit.back();
-        unit.pop_back();
-      }
-    }
-  }
-
-  // Count empty cells
-  std::vector<std::tuple<int, int>> box_list;
-  box_list.reserve(static_cast<size_t>(CELL_COUNT));
-  for (int i = 0; i < GRID_SIZE; ++i) {
-    for (int j = 0; j < GRID_SIZE; ++j) {
-      if (matrix[i][j] == 0) {
-        box_list.push_back(std::make_tuple(i, j));
-      }
-    }
-  }
-
-  // Fill empty cells one by one
-  std::map<std::string, std::vector<int>> available_num{};
-  int full_num = 0;
-  int empty_num = static_cast<int>(box_list.size());
-  while (full_num < empty_num) {
-    std::tuple<int, int> position = box_list[full_num];
-    int row = std::get<0>(position);
-    int col = std::get<1>(position);
-    std::vector<int> able_unit;
-    std::string key = std::to_string(row) + "x" + std::to_string(col);
-    if (available_num.find(key) == available_num.end()) {
-      // 3x3 box
-      able_unit = GetUnit();
-      for (int i = row / BOX_SIZE * BOX_SIZE; i < row / BOX_SIZE * BOX_SIZE + BOX_SIZE; ++i) {
-        for (int j = col / BOX_SIZE * BOX_SIZE; j < col / BOX_SIZE * BOX_SIZE + BOX_SIZE; ++j) {
-          able_unit.erase(std::remove(able_unit.begin(), able_unit.end(), matrix[i][j]),
-                          able_unit.end());
-        }
-      }
-      // Row
-      for (int i = 0; i < GRID_SIZE; ++i) {
-        if (matrix[row][i] != 0) {
-          able_unit.erase(std::remove(able_unit.begin(), able_unit.end(), matrix[row][i]),
-                          able_unit.end());
-        }
-      }
-      // Column
-      for (int i = 0; i < GRID_SIZE; ++i) {
-        if (matrix[i][col] != 0) {
-          able_unit.erase(std::remove(able_unit.begin(), able_unit.end(), matrix[i][col]),
-                          able_unit.end());
-        }
-      }
-      available_num[key] = able_unit;
-    } else {
-      able_unit = available_num[key];
-    }
-
-    // Backtrack if there is no available number
-    if (available_num[key].empty()) {
-      full_num -= 1;
-      if (available_num.find(key) != available_num.end()) {
-        available_num.erase(key);
-      }
-      matrix[row][col] = 0;
-      continue;
-    }
-
-    matrix[row][col] = available_num[key].back();
-    available_num[key].pop_back();
-    full_num += 1;
-  }
-
-  // Write generated values into the scene
-  for (int row = 0; row < GRID_SIZE; ++row) {
-    for (int col = 0; col < GRID_SIZE; ++col) {
-      const point_t point = {row, col};
-      setValue(point, matrix[row][col]);
-
-      const auto index =
-          static_cast<size_t>(point.x) + (static_cast<size_t>(point.y) * GRID_SIZE);
-      _board.at(index).state = State::INITED;
-    }
-  }
+  _board = PuzzleGenerator::GenerateSolvedBoard();
 
   assert(isComplete());
 }

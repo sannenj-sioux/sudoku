@@ -7,6 +7,7 @@ set(SOURCE_FILES
     command.cpp
     i18n.cpp
     input.cpp
+    puzzle_generator.cpp
     scene.cpp
     main.cpp
 )
