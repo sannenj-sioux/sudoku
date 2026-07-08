@@ -5,6 +5,7 @@ set(SOURCE_FILES
     board.cpp
     block.cpp
     command.cpp
+    game.cpp
     i18n.cpp
     input.cpp
     puzzle_generator.cpp

@@ -6,6 +6,7 @@
 #include <tuple>
 #include <vector>
 
+#include "board.h"
 #include "common.h"
 #include "utility.inl"
 
@@ -24,7 +25,7 @@ void SetCell(Board& board, int row, int column, int value, State state) {
 
 }  // namespace
 
-Board PuzzleGenerator::GenerateSolvedBoard() {
+void PuzzleGenerator::GenerateSolvedBoard(Board& board) {
   std::vector<std::vector<int>> matrix(static_cast<std::size_t>(GRID_SIZE),
                                        std::vector<int>(static_cast<std::size_t>(GRID_SIZE), 0));
 
@@ -102,15 +103,12 @@ Board PuzzleGenerator::GenerateSolvedBoard() {
     full_num += 1;
   }
 
-  Board board;
   board.reset();
   for (int row = 0; row < GRID_SIZE; ++row) {
     for (int column = 0; column < GRID_SIZE; ++column) {
       SetCell(board, row, column, matrix[row][column], State::INITED);
     }
   }
-
-  return board;
 }
 
 void PuzzleGenerator::EraseCells(Board& board, int count) {
@@ -128,3 +126,4 @@ void PuzzleGenerator::EraseCells(Board& board, int count) {
                        static_cast<std::vector<int>::difference_type>(random_index));
   }
 }
+

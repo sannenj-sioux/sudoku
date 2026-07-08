@@ -55,11 +55,7 @@ endif()
 set(UNIT_TEST_FILES
     ../src/board.cpp
     ../src/block.cpp
-    ../src/command.cpp
-    ../src/i18n.cpp
-    ../src/input.cpp
     ../src/puzzle_generator.cpp
-    ../src/scene.cpp
     puzzle_generation_test.cpp
 )
 
@@ -72,5 +68,28 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_
 endif()
 
 gtest_discover_tests(sudoku_unit_tests
+    EXTRA_ARGS --gtest_color=yes
+)
+
+set(SCENE_TEST_FILES
+    ../src/board.cpp
+    ../src/block.cpp
+    ../src/command.cpp
+    ../src/i18n.cpp
+    ../src/input.cpp
+    ../src/puzzle_generator.cpp
+    ../src/scene.cpp
+    scene_test.cpp
+)
+
+add_executable(scene_unit_tests ${SCENE_TEST_FILES})
+target_compile_features(scene_unit_tests PRIVATE cxx_std_17)
+target_link_libraries(scene_unit_tests PRIVATE GTest::gmock GTest::gtest_main)
+
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9)
+    target_link_libraries(scene_unit_tests PRIVATE stdc++fs)
+endif()
+
+gtest_discover_tests(scene_unit_tests
     EXTRA_ARGS --gtest_color=yes
 )

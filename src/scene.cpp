@@ -25,9 +25,14 @@ constexpr char KEY_UP = 0x48;
 constexpr char KEY_LEFT = 0x4B;
 constexpr char KEY_DOWN = 0x50;
 constexpr char KEY_RIGHT = 0x4D;
+
+PuzzleGenerator kDefaultPuzzleGenerator;
 }  // namespace
 
-CScene::CScene(int index) : _max_column(static_cast<int>(pow(index, 2))), _cur_point({0, 0}) {
+CScene::CScene(int index, IPuzzleGenerator* puzzle_generator)
+    : _max_column(static_cast<int>(pow(index, 2))),
+      _cur_point({0, 0}),
+      _puzzle_generator(puzzle_generator != nullptr ? puzzle_generator : &kDefaultPuzzleGenerator) {
   init();
 }
 
@@ -144,7 +149,7 @@ void CScene::setValue(int value) {
 }
 
 void CScene::eraseRandomGrids(int count) {
-  PuzzleGenerator::EraseCells(_board, count);
+  _puzzle_generator->EraseCells(_board, count);
 }
 
 bool CScene::isComplete() {
@@ -314,7 +319,7 @@ void CScene::play() {
 }
 
 void CScene::generate() {
-  _board = PuzzleGenerator::GenerateSolvedBoard();
+  _puzzle_generator->GenerateSolvedBoard(_board);
 
   assert(isComplete());
 }

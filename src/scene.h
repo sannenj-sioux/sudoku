@@ -7,11 +7,12 @@
 #include "block.h"
 #include "command.h"
 #include "common.h"
+#include "i_puzzle_generator.h"
 
 // Sudoku scene class
 class CScene {
  public:
-  CScene(int index = 3);
+  CScene(int index = 3, IPuzzleGenerator* puzzle_generator = nullptr);
   virtual ~CScene();
 
   void generate();
@@ -41,6 +42,7 @@ class CScene {
   std::array<CBlock, GRID_SIZE> _row_block;
   std::array<std::array<CBlock, BOX_SIZE>, BOX_SIZE> _xy_block;
   Board _board;
+  IPuzzleGenerator* _puzzle_generator;
 
   std::vector<CCommand> _vCommand;
 };

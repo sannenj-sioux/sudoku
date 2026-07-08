@@ -1,9 +1,9 @@
 #pragma once
 
-#include "board.h"
+#include "i_puzzle_generator.h"
 
-class PuzzleGenerator {
+class PuzzleGenerator : public IPuzzleGenerator {
  public:
-  static Board GenerateSolvedBoard();
-  static void EraseCells(Board& board, int count);
+  void GenerateSolvedBoard(Board& board) override;
+  void EraseCells(Board& board, int count) override;
 };
