@@ -1,12 +1,12 @@
 ﻿#pragma once
 
 #include "common.h"
+#include "i_scene_command.h"
 
-class CScene;
 class CCommand {
  public:
-  CCommand(CScene* pOwner);
-  CCommand(CScene* pOwner, const point_t& point, int preValue, int curValue);
+  CCommand(ISceneCommand* pOwner);
+  CCommand(ISceneCommand* pOwner, const point_t& point, int preValue, int curValue);
   CCommand(const CCommand&);
   ~CCommand();
 
@@ -20,7 +20,7 @@ class CCommand {
   void setCurValue(int curValue) { _nCurValue = curValue; }
 
  private:
-  CScene* _pOwner;
+  ISceneCommand* _pOwner;
   point_t _stPoint;
   int _nPreValue;
   int _nCurValue;  // actually the member is never used

@@ -1,6 +1,8 @@
 #pragma once
 
-#include "scene.h"
+#include <memory>
+
+#include "i_scene.h"
 
 class Game {
  public:
@@ -10,5 +12,5 @@ class Game {
   int LoadGame(const char* progress_file_path);
 
  private:
-  CScene scene_;
+    std::unique_ptr<IScene> scene_;
 };

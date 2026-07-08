@@ -1,10 +1,8 @@
 ﻿#include "command.h"
 
-#include "scene.h"
+CCommand::CCommand(ISceneCommand* pOwner) : _pOwner(pOwner) {}
 
-CCommand::CCommand(CScene* pOwner) : _pOwner(pOwner) {}
-
-CCommand::CCommand(CScene* pOwner, const point_t& point, int preValue, int curValue)
+CCommand::CCommand(ISceneCommand* pOwner, const point_t& point, int preValue, int curValue)
     : _pOwner(pOwner), _stPoint(point), _nPreValue(preValue), _nCurValue(curValue) {}
 
 CCommand::CCommand(const CCommand& rhs)
