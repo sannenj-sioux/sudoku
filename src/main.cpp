@@ -8,18 +8,15 @@
 #include "utility.inl"
 
 static void printHelp() {
-    std::cout << std::endl;
-    std::cout << "sudoku - a little game in command line" << std::endl
-              << std::endl;
-    std::cout << "Usage:" << std::endl;
-    std::cout << "\t sudoku [-l <progressFile>]" << std::endl << std::endl;
-    std::cout << "Options:" << std::endl;
-    std::cout << "\t -l <path> \t specify path of progress file to load, optional." << std::endl
-              << std::endl;
+  std::cout << '\n';
+  std::cout << "sudoku - a little game in command line\n\n";
+  std::cout << "Usage:\n";
+  std::cout << "\t sudoku [-l <progressFile>]\n\n";
+  std::cout << "Options:\n";
+  std::cout << "\t -l <path> \t specify path of progress file to load, optional.\n\n";
 }
 
-int main(int argc, char **argv)
-{
+int main(int argc, char** argv) {
   SetSystemEnv();
 
   CScene scene;
@@ -29,10 +26,10 @@ int main(int argc, char **argv)
     int eraseGridNumber = inputDifficulty();
     scene.generate();
     scene.eraseRandomGrids(eraseGridNumber);
-  } else if (argc == 3 && !strcmp(argv[1], "-l")) {
+  } else if (argc == 3 && (std::strcmp(argv[1], "-l") == 0)) {
     // load saved game progress
     if (!scene.load(argv[2])) {
-      message(I18n::Instance().Get(I18n::Key::LOAD_PROGRESS_FAIL));
+      Message(I18n::Instance().Get(I18n::Key::LOAD_PROGRESS_FAIL));
       return 0;
     }
     InputLanguage();
@@ -40,8 +37,6 @@ int main(int argc, char **argv)
     printHelp();
     return 0;
   }
-
-  scene.setMode(inputKeyMode());
 
   scene.play();
 

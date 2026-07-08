@@ -1,10 +1,4 @@
-#ifndef _SUDOKU_INPUT_H_
-#define _SUDOKU_INPUT_H_
-
-#include "common.h"
+#pragma once
 
 int inputDifficulty();
-KeyMode inputKeyMode();
 void InputLanguage();
-
-#endif

@@ -2,41 +2,45 @@
 #define _SUDOKU_UTILITY_INL_
 
 #include <algorithm>
-#include <cstdlib>
-#include <ctime>
-#include <cassert>
 #include <iostream>
 #include <random>
 #include <vector>
 
-//not real random,return number between [begin,end]
-inline unsigned int random(int begin, int end)
+// Return a random number in [begin, end].
+inline unsigned int RandomInt(int begin, int end)
 {
-    std::random_device rd;
-    std::mt19937 g(rd());
-    return std::uniform_int_distribution<unsigned int>(begin, end)(g);
+    std::random_device random_device;
+    std::mt19937 generator(random_device());
+    return std::uniform_int_distribution<unsigned int>(begin, end)(generator);
 }
 
-inline std::vector<int> get_unit(){
-    return std::vector<int> {1, 2, 3, 4, 5, 6, 7, 8, 9};
-}
-
-inline std::vector<int> shuffle_unit(){
-    std::vector<int> unit = get_unit();
-    std::random_device rd;
-    std::mt19937 g(rd());
-    std::shuffle(unit.begin(), unit.end(), g);
+inline std::vector<int> GetUnit() {
+    std::vector<int> unit;
+    unit.reserve(9);
+    for (int value = 1; value <= 9; ++value) {
+        unit.push_back(value);
+    }
     return unit;
 }
 
-inline void message(const char* msg = "", bool lf = true)
-{
-    std::cout << msg;
-    if (lf) std::cout << std::endl;
+inline std::vector<int> ShuffleUnit() {
+    std::vector<int> unit = GetUnit();
+    std::random_device random_device;
+    std::mt19937 generator(random_device());
+    std::shuffle(unit.begin(), unit.end(), generator);
+    return unit;
 }
 
-inline void message(const std::string& msg, bool lf = true) {
-  message(msg.c_str(), lf);
+inline void Message(const char* msg = "", bool add_line_feed = true)
+{
+    std::cout << msg;
+    if (add_line_feed) {
+        std::cout << '\n';
+    }
+}
+
+inline void Message(const std::string& msg, bool add_line_feed = true) {
+  Message(msg.c_str(), add_line_feed);
 }
 
 #ifdef _WIN32
@@ -94,7 +98,7 @@ inline void message(const std::string& msg, bool lf = true) {
     inline char _getch() { return getch(); }
 #endif
 
-inline void cls(void)
+inline void ClearScreen(void)
 {
     // Clear screen using ANSI escape sequence; faster and less flicker than system("cls")
     std::cout << "\033[H\033[J";

@@ -2,8 +2,9 @@
 
 #include <cassert>
 
-I18n::Dict english = {
-    {I18n::Key::ASK_KEY_MAP, "Keymap mode: 1 WASD 2 VIM"},
+namespace {
+
+const I18n::Dict ENGLISH_DICT = {
     {I18n::Key::INPUT_ERROR, "Input error!"},
     {I18n::Key::LOAD_PROGRESS_FAIL, "Load progress failed!"},
     {I18n::Key::ASK_QUIT, "Quit game? [Y/N]"},
@@ -16,8 +17,8 @@ I18n::Dict english = {
     {I18n::Key::NOT_COMPLETED, "Sorry, not completed."},
     {I18n::Key::ASK_DIFFICULTY, "Select difficulty: 1 Easy 2 Normal 3 Hard"},
 };
-I18n::Dict chinese = {
-    {I18n::Key::ASK_KEY_MAP, "设置按键模式: 1 WASD 2 VIM"},
+
+const I18n::Dict CHINESE_DICT = {
     {I18n::Key::INPUT_ERROR, "输入错误!"},
     {I18n::Key::LOAD_PROGRESS_FAIL, "加载存档失败!"},
     {I18n::Key::ASK_QUIT, "退出游戏? [Y/N]"},
@@ -31,8 +32,10 @@ I18n::Dict chinese = {
     {I18n::Key::ASK_DIFFICULTY, "设置难度: 1简单 2普通 3困难"},
 };
 
+}  // namespace
+
 // Default English
-I18n::I18n() : dict_(&english) {}
+I18n::I18n() : dict_(&ENGLISH_DICT) {}
 
 I18n& I18n::Instance() {
   static I18n i18n;
@@ -42,10 +45,10 @@ I18n& I18n::Instance() {
 void I18n::SetLanguage(Language language) {
   switch (language) {
     case Language::ENGLISH:
-      dict_ = &english;
+      dict_ = &ENGLISH_DICT;
       break;
     case Language::CHINESE:
-      dict_ = &chinese;
+      dict_ = &CHINESE_DICT;
       break;
     case Language::MAX:
     default:
@@ -55,5 +58,5 @@ void I18n::SetLanguage(Language language) {
 
 std::string I18n::Get(Key key) const {
   assert(dict_->count(key));
-  return (*dict_)[key];
+  return dict_->at(key);
 }

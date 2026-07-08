@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <chrono>
 #include <iostream>
 #include <vector>
@@ -24,17 +25,18 @@ void test_generate_performance() {
     times.push_back(duration.count());
 
     if (i % 10 == 0) {
-      cout << "Generation " << i << " completed, time: " << duration.count() << " ms"
-           << endl;
+      cout << "Generation " << i << " completed, time: " << duration.count() << " ms" << endl;
     }
   }
 
   // Calculate statistics
-  double sum = 0, min = times[0], max = times[0];
+  double sum = 0;
+  double min = times[0];
+  double max = times[0];
   for (double time : times) {
     sum += time;
-    if (time < min) min = time;
-    if (time > max) max = time;
+    min = std::min(min, time);
+    max = std::max(max, time);
   }
   double avg = sum / iterations;
 
@@ -60,8 +62,7 @@ void test_erase_performance() {
     auto end = high_resolution_clock::now();
 
     duration<double, milli> duration = end - start;
-    cout << "Erased " << level << " cells, time: " << duration.count() << " ms"
-         << endl;
+    cout << "Erased " << level << " cells, time: " << duration.count() << " ms" << endl;
 
     // Regenerate board for next test
     scene.generate();
@@ -88,11 +89,13 @@ void test_complete_check_performance() {
   }
 
   // Calculate statistics
-  double sum = 0, min = times[0], max = times[0];
+  double sum = 0;
+  double min = times[0];
+  double max = times[0];
   for (double time : times) {
     sum += time;
-    if (time < min) min = time;
-    if (time > max) max = time;
+    min = std::min(min, time);
+    max = std::max(max, time);
   }
   double avg = sum / iterations;
 

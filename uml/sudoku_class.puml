@@ -10,32 +10,6 @@ enum C_0012548033600169640822 {
 INITED
 ERASED
 }
-enum "KeyMode" as C_0015576738237064286415
-enum C_0015576738237064286415 {
-NORMAL
-VIM
-}
-class "KeyMap" as C_0001577280711521442322
-class C_0001577280711521442322 {
-__
-+DOWN : char
-+ENTER : const char
-+ESC : const char
-+LEFT : char
-+RIGHT : char
-+U : const char
-+UP : char
-}
-class "Normal" as C_0011525575787956178258
-class C_0011525575787956178258 {
-+Normal() : void
-__
-}
-class "Vim" as C_0008902529157604332855
-class C_0008902529157604332855 {
-+Vim() : void
-__
-}
 class "point_t" as C_0006605295246263958522
 class C_0006605295246263958522 {
 __
@@ -66,6 +40,22 @@ __
 {static} -MAX_COUNT : const int
 -_count : int
 -_numbers : point_value_t *[9]
+}
+class "std::array<CBlock,GRID_SIZE>" as C_0014472408112623384711
+class C_0014472408112623384711 {
+__
+}
+class "std::array<CBlock,BOX_SIZE>" as C_0008981651403036664032
+class C_0008981651403036664032 {
+__
+}
+class "std::array<std::array<CBlock,BOX_SIZE>,BOX_SIZE>" as C_0000368322549962654847
+class C_0000368322549962654847 {
+__
+}
+class "std::array<point_value_t,CELL_COUNT>" as C_0018329795729824717034
+class C_0018329795729824717034 {
+__
 }
 class "std::vector<CCommand>" as C_0000778261534352271285
 class C_0000778261534352271285 {
@@ -135,9 +125,9 @@ class C_0001939824123042984499 {
 +~CCommand() : void
 ..
 +execute(int nInputValue) : bool
-+getCurValue() : int
-+getPoint() : point_t
-+getPreValue() : int
++getCurValue() const : int
++getPoint() const : point_t
++getPreValue() const : int
 +setCurValue(int curValue) : void
 +setPoint(const point_t & point) : void
 +setPreValue(int preValue) : void
@@ -153,7 +143,7 @@ class C_0016294622028327177442 {
 +CScene(int index = 3) : void
 +~CScene() : void
 ..
-+eraseRandomGrids(const int count) : void
++eraseRandomGrids(int count) : void
 +generate() : void
 +getCurPoint() : point_t
 -init() : void
@@ -162,21 +152,22 @@ class C_0016294622028327177442 {
 +play() : void
 -printUnderline(int line_no = -1) const : void
 +save(const char * filename) : bool
-+setCurValue(const int nCurValue, int & nLastValue) : bool
-+setMode(KeyMode mode) : void
-+setPointValue(const point_t &, const int) : bool
--setValue(const int) : void
--setValue(const point_t &, const int) : void
++setCurValue(int nCurValue, int & nLastValue) : bool
++setPointValue(const point_t &, int) : bool
+-setValue(int) : void
+-setValue(const point_t &, int) : void
 +show() const : void
 __
--_column_block : CBlock[9]
+{static} -BOX_SIZE : const int
+{static} -CELL_COUNT : const int
+{static} -GRID_SIZE : const int
+-_column_block : std::array<CBlock,GRID_SIZE>
 -_cur_point : point_t
--_map : point_value_t[81]
+-_map : std::array<point_value_t,CELL_COUNT>
 -_max_column : int
--_row_block : CBlock[9]
+-_row_block : std::array<CBlock,GRID_SIZE>
 -_vCommand : std::vector<CCommand>
--_xy_block : CBlock[3][3]
--keyMap : KeyMap *
+-_xy_block : std::array<std::array<CBlock,BOX_SIZE>,BOX_SIZE>
 }
 enum "Language" as C_0017280194170740603963
 enum C_0017280194170740603963 {
@@ -192,11 +183,10 @@ class C_0006098803878144246881 {
 {static} +Instance() : I18n &
 +SetLanguage(Language) : void
 __
--dict_ : Dict *
+-dict_ : const Dict *
 }
 enum "I18n::Key" as C_0005470317071970115398
 enum C_0005470317071970115398 {
-ASK_KEY_MAP
 INPUT_ERROR
 LOAD_PROGRESS_FAIL
 ASK_QUIT
@@ -209,11 +199,13 @@ CONGRATULATION
 NOT_COMPLETED
 ASK_DIFFICULTY
 }
-C_0001577280711521442322 <|-- C_0011525575787956178258
-C_0001577280711521442322 <|-- C_0008902529157604332855
 C_0012873921550621665616 o-- C_0012548033600169640822 : +state
 C_0006420790171117861728 ..> C_0006605295246263958522
 C_0004259552449989326327 --> "9" C_0012873921550621665616 : -_numbers
+C_0014472408112623384711 ..> C_0004259552449989326327
+C_0008981651403036664032 ..> C_0004259552449989326327
+C_0000368322549962654847 ..> C_0008981651403036664032
+C_0018329795729824717034 ..> C_0012873921550621665616
 C_0000778261534352271285 ..> C_0001939824123042984499
 C_0005016775666417918015 ..> C_0007500688229146332176
 C_0005016775666417918015 ..> C_0000465838628272370621
@@ -223,13 +215,11 @@ C_0010533272728017906629 o-- C_0006593221852075368801 : -bg
 C_0010533272728017906629 o-- C_0006593221852075368801 : -fg
 C_0001939824123042984499 --> C_0016294622028327177442 : -_pOwner
 C_0001939824123042984499 o-- C_0006605295246263958522 : -_stPoint
-C_0016294622028327177442 ..> C_0015576738237064286415
-C_0016294622028327177442 --> C_0001577280711521442322 : -keyMap
 C_0016294622028327177442 o-- C_0006605295246263958522 : -_cur_point
-C_0016294622028327177442 o-- "9" C_0004259552449989326327 : -_column_block
-C_0016294622028327177442 o-- "9" C_0004259552449989326327 : -_row_block
-C_0016294622028327177442 o-- "9" C_0004259552449989326327 : -_xy_block
-C_0016294622028327177442 o-- "81" C_0012873921550621665616 : -_map
+C_0016294622028327177442 o-- C_0014472408112623384711 : -_column_block
+C_0016294622028327177442 o-- C_0014472408112623384711 : -_row_block
+C_0016294622028327177442 o-- C_0000368322549962654847 : -_xy_block
+C_0016294622028327177442 o-- C_0018329795729824717034 : -_map
 C_0016294622028327177442 o-- C_0000778261534352271285 : -_vCommand
 C_0006098803878144246881 ..> C_0017280194170740603963
 C_0006098803878144246881 ..> C_0005016775666417918015

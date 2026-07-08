@@ -4,7 +4,7 @@
 #include <map>
 #include <string>
 
-enum class Language : uint32_t {
+enum class Language : std::uint8_t {
   ENGLISH,
   CHINESE,
   MAX,
@@ -12,8 +12,7 @@ enum class Language : uint32_t {
 
 class I18n {
  public:
-  enum class Key {
-    ASK_KEY_MAP,
+  enum class Key : std::uint8_t {
     INPUT_ERROR,
     LOAD_PROGRESS_FAIL,
     ASK_QUIT,
@@ -35,5 +34,5 @@ class I18n {
  private:
   I18n();
 
-  Dict* dict_;
+  const Dict* dict_;
 };
