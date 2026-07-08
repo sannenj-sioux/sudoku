@@ -4,7 +4,7 @@
 #include <memory>
 
 #include "i_scene.h"
-#include "mock_puzzle_generator.h"
+#include "mocks/mock_puzzle_generator.h"
 #include "puzzle_generator.h"
 #include "scene.h"
 

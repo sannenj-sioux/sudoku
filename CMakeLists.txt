@@ -33,7 +33,7 @@ add_definitions(-DDEBUG) # 相当于代码中 #define DEBUG
 
 SET(EXECUTABLE_OUTPUT_PATH "${PROJECT_SOURCE_DIR}/bin") # 可执行文件输出目录
 
-INCLUDE_DIRECTORIES("${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/src") # 头文件包含目录
+INCLUDE_DIRECTORIES("${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/src" "${PROJECT_SOURCE_DIR}/interfaces") # 头文件包含目录
 
 # 这段代码可以区分操作系统
 MESSAGE("Identifying the OS...")
