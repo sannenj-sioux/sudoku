@@ -16,6 +16,7 @@ class CScene {
   void generate();
   void show() const;
 
+  point_value_t getPointValue(const point_t&) const;
   bool setCurValue(int nCurValue, int& nLastValue);
   bool setPointValue(const point_t&, int);
   point_t getCurPoint();

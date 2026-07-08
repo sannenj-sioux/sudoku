@@ -127,6 +127,11 @@ bool CScene::setCurValue(int nCurValue, int& nLastValue) {
   return false;
 }
 
+point_value_t CScene::getPointValue(const point_t& point) const {
+  const auto index = static_cast<size_t>(point.x) + (static_cast<size_t>(point.y) * GRID_SIZE);
+  return _map.at(index);
+}
+
 void CScene::setValue(const point_t& point, int value) {
   const auto index = static_cast<size_t>(point.x) + (static_cast<size_t>(point.y) * GRID_SIZE);
   _map.at(index).value = value;
