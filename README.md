@@ -23,6 +23,16 @@ cmake -S . -B build
 cmake --build build --config Release
 ```
 
+## Unit Tests (GoogleTest/GoogleMock)
+The test target uses GoogleTest/GoogleMock via CMake `FetchContent`.
+The dependency is downloaded automatically when CMake configures the project.
+
+``` shell
+cmake -S . -B build
+cmake --build build --config Release
+ctest --test-dir build -C Release --output-on-failure
+```
+
 ## Run
 The build step generates the `sudoku` executable in the `bin` directory.
 ``` shell

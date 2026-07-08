@@ -32,6 +32,41 @@
         "CMake: configure",
         "CMake: build"
       ],
+    },
+    {
+      "label": "CTest: unit tests (Debug)",
+      "type": "shell",
+      "command": "ctest --test-dir build -C Debug --output-on-failure",
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
+      "dependsOn": "CMake: configure & build",
+      "problemMatcher": []
+    },
+    {
+      "label": "CTest: unit tests (Release)",
+      "type": "shell",
+      "command": "ctest --test-dir build -C Release --output-on-failure",
+      "group": "test",
+      "dependsOn": "CMake: configure & build",
+      "problemMatcher": []
+    },
+    {
+      "label": "GTest: unit tests (Debug, colored)",
+      "type": "shell",
+      "command": ".\\bin\\Debug\\sudoku_unit_tests.exe --gtest_color=yes",
+      "group": "test",
+      "dependsOn": "CMake: configure & build",
+      "problemMatcher": []
+    },
+    {
+      "label": "GTest: unit tests (Release, colored)",
+      "type": "shell",
+      "command": ".\\bin\\Release\\sudoku_unit_tests.exe --gtest_color=yes",
+      "group": "test",
+      "dependsOn": "CMake: configure & build",
+      "problemMatcher": []
     }
   ]
 }

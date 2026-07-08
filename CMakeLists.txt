@@ -27,7 +27,7 @@ endif()
 
 # set(CMAKE_VERBOSE_MAKEFILE ON) # 开启调试 出现问题时开启
 
-# enable_testing() # 打开测试
+include(CTest)
 
 add_definitions(-DDEBUG) # 相当于代码中 #define DEBUG
 
@@ -55,7 +55,9 @@ endif()
 
 # 添加子目录
 add_subdirectory(src)
-add_subdirectory(tests)
+if(BUILD_TESTING)
+  add_subdirectory(tests)
+endif()
 
 # Visual Studio generators don't emit compile_commands.json directly.
 # Keep a CMake-native refresh target in ALL so clangd DB stays updated with normal builds.
