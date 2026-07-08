@@ -19,56 +19,56 @@ Contributions are welcome through pull requests for new features or bug fixes.
 
 ## Build
 ``` shell
-cmake -B build -S .
-cmake --build build
+cmake -S . -B build
+cmake --build build --config Release
 ```
 
 ## Run
 The build step generates the `sudoku` executable in the `bin` directory.
 ``` shell
-./sudoku  # Start directly
-./sudoku -l filename  # Load a saved game progress file
-./sudoku -h  # Show help information
+# Linux/macOS
+./bin/sudoku
+./bin/sudoku -l filename
+
+# Windows (Visual Studio generator)
+.\bin\Release\sudoku.exe
+.\bin\Release\sudoku.exe -l filename
 ```
 
 ## Controls
-- 0 Delete an entered number
-- u Undo the previous action
-- enter Try to complete the puzzle
-- esc Exit the game
+- Arrow keys: move the cursor
+- `1`-`9`: fill a number into the current cell (editable cells only)
+- `0`: clear the current editable cell
+- `u`: undo the previous action
+- `Enter`: validate whether the puzzle is complete
+- `Esc`: quit (with save prompt)
 
-### Normal Mode
-- w Move cursor up ↑
-- a Move cursor left ←
-- s Move cursor down ↓
-- d Move cursor right →
+## UML Generation
+UML generation is integrated into CMake through the `generate_uml` target.
 
-### Vim Mode
-- k Move cursor up ↑
-- h Move cursor left ←
-- j Move cursor down ↓
-- l Move cursor right →
+``` shell
+cmake --build build --config Release --target generate_uml
+```
+
+Generated diagrams are written to the `uml` directory.
+For detailed setup notes, see `UML_WORKFLOW.md`.
 
 ## Project Structure
 ```bash
-│--.gitignore  
-│--build.bat        // One-click build script for Windows  
-│--build.sh         // One-click build script for Linux/macOS  
-│--CMakeLists.txt   // CMake project file  
-│--README.md     
-└--src              // Source code directory  
-  │--block.cpp     // Sudoku block combination class; can represent rows, columns, and 3x3 boxes  
-   │--block.h  
-  │--color.h       // Color class  
-  │--command.cpp   // Command class with undo support  
-   │--command.h     
-  │--common.h      // Shared header file  
-  │--input.cpp     // Input class  
-   │--input.h   
-  │--main.cpp      // Entry point  
-  │--scene.cpp     // Game scene class  
-   │--scene.h   
-  │--test.cpp      // Test file  
-   │--test.h  
-  └--utility.inl   // Some useful global utility functions  
+│--CMakeLists.txt
+│--README.md
+│--install_cmake.bat
+│--install_clang_uml.bat
+│--src/
+│  │--main.cpp        // Program entry point
+│  │--scene.cpp/.h    // Game scene and interaction logic
+│  │--input.cpp/.h    // Startup input flow (language/difficulty)
+│  │--command.cpp/.h  // Undo command handling
+│  │--block.cpp/.h    // Sudoku row/column/box abstraction
+│  │--i18n.cpp/.h     // Localization support
+│  └--...
+│--tests/
+│  └--performance_test.cpp
+└--uml/
+   └--sudoku_class.puml
 ```
