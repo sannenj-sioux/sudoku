@@ -421,8 +421,12 @@ void CScene::generate() {
   // Write generated values into the scene
   for (int row = 0; row < GRID_SIZE; ++row) {
     for (int col = 0; col < GRID_SIZE; ++col) {
-      point_t point = {row, col};
+      const point_t point = {row, col};
       setValue(point, matrix[row][col]);
+
+      const auto index =
+          static_cast<size_t>(point.x) + (static_cast<size_t>(point.y) * GRID_SIZE);
+      _map.at(index).state = State::INITED;
     }
   }
 
