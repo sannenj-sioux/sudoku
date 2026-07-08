@@ -1,17 +1,12 @@
 #include "scene.h"
 
-#include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
-#include <map>
-#include <tuple>
-#include <vector>
 
 #include "color.h"
-#include "common.h"
 #include "display_symbol.h"
 #include "i18n.h"
 #include "puzzle_generator.h"
@@ -43,15 +38,17 @@ void CScene::show() const {
 
   printUnderline();
 
+  const auto& row_blocks = _board.rowBlocks();
+
   // Get the number at the cursor position (if cursor is within bounds)
   int highlighted_num = UNSELECTED;
   if (_cur_point.y >= 0 && _cur_point.y < _max_column) {
-    const CBlock& cursor_block = _row_block.at(static_cast<size_t>(_cur_point.y));
+    const CBlock& cursor_block = row_blocks.at(static_cast<size_t>(_cur_point.y));
     highlighted_num = cursor_block.getNumberValue(_cur_point.x);
   }
 
   for (int row = 0; row < _max_column; ++row) {
-    const CBlock& block = _row_block.at(static_cast<size_t>(row));
+    const CBlock& block = row_blocks.at(static_cast<size_t>(row));
     if (_cur_point.y == row) {
       block.print(_cur_point.x, highlighted_num);
     } else {
@@ -84,40 +81,6 @@ void CScene::printUnderline(int line_no) const {
 
 void CScene::init() {
   _board.reset();
-
-  for (int col = 0; col < _max_column; ++col) {
-    CBlock column_block;
-
-    for (int row = 0; row < _max_column; ++row) {
-      const auto index =
-          (static_cast<size_t>(row) * static_cast<size_t>(_max_column)) + static_cast<size_t>(col);
-      column_block.push_back(&(_board.at(index)));
-    }
-
-    _column_block.at(static_cast<size_t>(col)) = column_block;
-  }
-
-  for (int row = 0; row < _max_column; ++row) {
-    CBlock row_block;
-
-    for (int col = 0; col < _max_column; ++col) {
-      const auto index =
-          (static_cast<size_t>(row) * static_cast<size_t>(_max_column)) + static_cast<size_t>(col);
-      row_block.push_back(&(_board.at(index)));
-    }
-
-    _row_block.at(static_cast<size_t>(row)) = row_block;
-  }
-
-  for (int row = 0; row < _max_column; ++row) {
-    for (int col = 0; col < _max_column; ++col) {
-      const auto index =
-          (static_cast<size_t>(row) * static_cast<size_t>(_max_column)) + static_cast<size_t>(col);
-      _xy_block.at(static_cast<size_t>(row / BOX_SIZE))
-          .at(static_cast<size_t>(col / BOX_SIZE))
-          .push_back(&(_board.at(index)));
-    }
-  }
 }
 
 bool CScene::setCurValue(int nCurValue, int& nLastValue) {
@@ -153,6 +116,10 @@ void CScene::eraseRandomGrids(int count) {
 }
 
 bool CScene::isComplete() {
+  const auto& row_blocks = _board.rowBlocks();
+  const auto& column_blocks = _board.columnBlocks();
+  const auto& box_blocks = _board.boxBlocks();
+
   // If any block is not fully filled, the puzzle is not complete
   for (size_t i = 0; i < _board.size(); ++i) {
     if (_board.at(i).value == UNSELECTED) {
@@ -163,9 +130,9 @@ bool CScene::isComplete() {
   // Numbers in each block must also satisfy Sudoku rules
   for (int row = 0; row < GRID_SIZE; ++row) {
     for (int col = 0; col < GRID_SIZE; ++col) {
-      if (!_row_block.at(static_cast<size_t>(row)).isValid() ||
-          !_column_block.at(static_cast<size_t>(col)).isValid() ||
-          !_xy_block.at(static_cast<size_t>(row / BOX_SIZE))
+      if (!row_blocks.at(static_cast<size_t>(row)).isValid() ||
+          !column_blocks.at(static_cast<size_t>(col)).isValid() ||
+          !box_blocks.at(static_cast<size_t>(row / BOX_SIZE))
                .at(static_cast<size_t>(col / BOX_SIZE))
                .isValid()) {
         return false;

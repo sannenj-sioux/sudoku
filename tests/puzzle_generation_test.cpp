@@ -1,7 +1,6 @@
 #include <gtest/gtest.h>
 
 #include <array>
-#include <vector>
 
 #include "board.h"
 #include "block.h"
