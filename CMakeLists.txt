@@ -67,3 +67,31 @@ if(CMAKE_GENERATOR MATCHES "Visual Studio" AND NOT SUDOKU_SKIP_COMPILE_DB_REFRES
     VERBATIM
   )
 endif()
+
+# UML generation via clang-uml (manual build target).
+find_program(CLANG_UML_EXE
+  NAMES clang-uml clang-uml.exe
+  HINTS
+    "C:/Program Files/clang-uml/bin"
+    "$ENV{LOCALAPPDATA}/Microsoft/WinGet/Links"
+)
+
+if(CLANG_UML_EXE)
+  add_custom_target(generate_uml
+    COMMAND ${CLANG_UML_EXE} --config ${PROJECT_SOURCE_DIR}/.clang-uml
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+    COMMENT "Generating UML diagrams with clang-uml"
+    VERBATIM
+  )
+
+  if(TARGET refresh_compile_commands)
+    add_dependencies(generate_uml refresh_compile_commands)
+  endif()
+else()
+  add_custom_target(generate_uml
+    COMMAND ${CMAKE_COMMAND} -E echo "clang-uml was not found. Install it first (see install_clang_uml.bat)."
+    COMMAND ${CMAKE_COMMAND} -E false
+    COMMENT "Cannot generate UML because clang-uml is missing"
+    VERBATIM
+  )
+endif()

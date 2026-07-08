@@ -1,4 +1,4 @@
-compilation_database_dir: build-uml
+compilation_database_dir: build
 output_directory: uml
 
 # Minimal class diagram for the Sudoku sources.

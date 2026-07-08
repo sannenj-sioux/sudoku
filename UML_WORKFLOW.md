@@ -18,20 +18,21 @@ install_clang_uml.bat
 Run from repository root:
 
 ```bat
-generate_uml.bat
+cmake -S . -B build
+cmake --build build --target generate_uml
 ```
 
 This will:
 
-1. Locate Visual Studio C++ build tools
-2. Configure `build-uml` with Ninja and export `compile_commands.json`
-3. Run `clang-uml` with `.clang-uml`
-4. Write output files to the `uml` folder
+1. Refresh `compile_commands.json` (for Visual Studio generators)
+2. Run `clang-uml` with `.clang-uml`
+3. Write output files to the `uml` folder
 
 ## Configuration
 
 - Config file: `.clang-uml`
 - Diagram name: `sudoku_class`
 - Input scope: `src/*.h`, `src/*.hpp`, `src/*.cpp`
+- Build target: `generate_uml`
 
 Adjust `.clang-uml` if you want to limit or expand coverage.
