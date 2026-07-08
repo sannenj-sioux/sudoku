@@ -21,8 +21,8 @@ int main(int argc, char** argv) {
 
   if (argc == 3 && (std::strcmp(argv[1], "-l") == 0)) {
     return game.LoadGame(argv[2]);
-  } else {
-    printHelp();
-    return 0;
   }
+
+  printHelp();
+  return 0;
 }

@@ -248,7 +248,7 @@ class C_0016294622028327177442 {
 -printUnderline(int line_no = -1) const : void
 +save(const char * filename) : bool
 +setCurValue(int nCurValue, int & nLastValue) : bool
-+setPointValue(const point_t &, int) : bool
++setPointValue(const point_t & point, int value) : bool
 -setValue(int) : void
 -setValue(const point_t &, int) : void
 -show() const : void

@@ -15,18 +15,18 @@ class CScene : public IScene, public ISceneCommand {
   CScene(int index = 3, IPuzzleGenerator* puzzle_generator = nullptr);
   virtual ~CScene();
 
+#pragma region IScene
   void generate() override;
-
   void eraseRandomGrids(int count) override;
   bool isComplete() override;
-
   void play() override;
   bool save(const char* filename) override;
   bool load(const char* filename) override;
+#pragma endregion
 
 #pragma region ISceneCommand
   bool setCurValue(int nCurValue, int& nLastValue) override;
-  bool setPointValue(const point_t&, int) override;
+  bool setPointValue(const point_t& point, int value) override;
   point_t getCurPoint() override;
 #pragma endregion
 
