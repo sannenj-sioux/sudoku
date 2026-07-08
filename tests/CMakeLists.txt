@@ -32,6 +32,7 @@ include(GoogleTest)
 
 # Manually specify source files
 set(PERFORMANCE_TEST_FILES
+    ../src/board.cpp
     ../src/block.cpp
     ../src/command.cpp
     ../src/i18n.cpp
@@ -51,6 +52,7 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_
 endif()
 
 set(UNIT_TEST_FILES
+    ../src/board.cpp
     ../src/block.cpp
     ../src/command.cpp
     ../src/i18n.cpp

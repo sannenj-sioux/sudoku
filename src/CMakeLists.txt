@@ -2,6 +2,7 @@
 
 # Manually specify source files
 set(SOURCE_FILES
+    board.cpp
     block.cpp
     command.cpp
     i18n.cpp

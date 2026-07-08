@@ -3,6 +3,7 @@
 #include <array>
 #include <vector>
 
+#include "board.h"
 #include "block.h"
 #include "command.h"
 #include "common.h"
@@ -39,7 +40,7 @@ class CScene {
   std::array<CBlock, GRID_SIZE> _column_block;
   std::array<CBlock, GRID_SIZE> _row_block;
   std::array<std::array<CBlock, BOX_SIZE>, BOX_SIZE> _xy_block;
-  std::array<point_value_t, CELL_COUNT> _map;
+  Board _board;
 
   std::vector<CCommand> _vCommand;
 };

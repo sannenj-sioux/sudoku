@@ -77,7 +77,7 @@ void CScene::printUnderline(int line_no) const {
 }
 
 void CScene::init() {
-  _map.fill({static_cast<int>(UNSELECTED), State::INITED});
+  _board.reset();
 
   for (int col = 0; col < _max_column; ++col) {
     CBlock column_block;
@@ -85,7 +85,7 @@ void CScene::init() {
     for (int row = 0; row < _max_column; ++row) {
       const auto index =
           (static_cast<size_t>(row) * static_cast<size_t>(_max_column)) + static_cast<size_t>(col);
-      column_block.push_back(&(_map.at(index)));
+      column_block.push_back(&(_board.at(index)));
     }
 
     _column_block.at(static_cast<size_t>(col)) = column_block;
@@ -97,7 +97,7 @@ void CScene::init() {
     for (int col = 0; col < _max_column; ++col) {
       const auto index =
           (static_cast<size_t>(row) * static_cast<size_t>(_max_column)) + static_cast<size_t>(col);
-      row_block.push_back(&(_map.at(index)));
+      row_block.push_back(&(_board.at(index)));
     }
 
     _row_block.at(static_cast<size_t>(row)) = row_block;
@@ -109,7 +109,7 @@ void CScene::init() {
           (static_cast<size_t>(row) * static_cast<size_t>(_max_column)) + static_cast<size_t>(col);
       _xy_block.at(static_cast<size_t>(row / BOX_SIZE))
           .at(static_cast<size_t>(col / BOX_SIZE))
-          .push_back(&(_map.at(index)));
+          .push_back(&(_board.at(index)));
     }
   }
 }
@@ -117,7 +117,7 @@ void CScene::init() {
 bool CScene::setCurValue(int nCurValue, int& nLastValue) {
   const auto index =
       static_cast<size_t>(_cur_point.x) + (static_cast<size_t>(_cur_point.y) * GRID_SIZE);
-  const auto point = _map.at(index);
+  const auto point = _board.at(index);
   if (point.state == State::ERASED) {
     nLastValue = point.value;
     setValue(nCurValue);
@@ -129,12 +129,12 @@ bool CScene::setCurValue(int nCurValue, int& nLastValue) {
 
 point_value_t CScene::getPointValue(const point_t& point) const {
   const auto index = static_cast<size_t>(point.x) + (static_cast<size_t>(point.y) * GRID_SIZE);
-  return _map.at(index);
+  return _board.at(index);
 }
 
 void CScene::setValue(const point_t& point, int value) {
   const auto index = static_cast<size_t>(point.x) + (static_cast<size_t>(point.y) * GRID_SIZE);
-  _map.at(index).value = value;
+  _board.at(index).value = value;
 }
 
 void CScene::setValue(int value) {
@@ -154,7 +154,7 @@ void CScene::eraseRandomGrids(int count) {
   for (int i = 0; i < count; ++i) {
     const auto random_index =
         static_cast<size_t>(RandomInt(0, static_cast<int>(cell_indexes.size() - 1)));
-    _map.at(static_cast<size_t>(cell_indexes.at(random_index))) = erased_value;
+    _board.at(static_cast<size_t>(cell_indexes.at(random_index))) = erased_value;
     cell_indexes.erase(cell_indexes.begin() +
                        static_cast<std::vector<int>::difference_type>(random_index));
   }
@@ -162,8 +162,8 @@ void CScene::eraseRandomGrids(int count) {
 
 bool CScene::isComplete() {
   // If any block is not fully filled, the puzzle is not complete
-  for (size_t i = 0; i < _map.size(); ++i) {
-    if (_map.at(i).value == UNSELECTED) {
+  for (size_t i = 0; i < _board.size(); ++i) {
+    if (_board.at(i).value == UNSELECTED) {
       return false;
     }
   }
@@ -197,9 +197,9 @@ bool CScene::save(const char* filename) {
   std::fstream file_stream;
   file_stream.open(filename, std::fstream::in | std::fstream::out | std::fstream::app);
 
-  // save _map
-  for (size_t i = 0; i < _map.size(); ++i) {
-    file_stream << _map.at(i).value << ' ' << static_cast<int>(_map.at(i).state) << '\n';
+  // save board cells
+  for (size_t i = 0; i < _board.size(); ++i) {
+    file_stream << _board.at(i).value << ' ' << static_cast<int>(_board.at(i).state) << '\n';
   }
 
   // save _cur_point
@@ -226,11 +226,11 @@ bool CScene::load(const char* filename) {
   std::fstream file_stream;
   file_stream.open(filename, std::fstream::in | std::fstream::out | std::fstream::app);
 
-  // load _map
-  for (size_t i = 0; i < _map.size(); ++i) {
+  // load board cells
+  for (size_t i = 0; i < _board.size(); ++i) {
     int tmpState;
-    file_stream >> _map.at(i).value >> tmpState;
-    _map.at(i).state = static_cast<State>(tmpState);
+    file_stream >> _board.at(i).value >> tmpState;
+    _board.at(i).state = static_cast<State>(tmpState);
   }
 
   // load _cur_point
@@ -426,7 +426,7 @@ void CScene::generate() {
 
       const auto index =
           static_cast<size_t>(point.x) + (static_cast<size_t>(point.y) * GRID_SIZE);
-      _map.at(index).state = State::INITED;
+      _board.at(index).state = State::INITED;
     }
   }
 
@@ -435,7 +435,7 @@ void CScene::generate() {
 
 bool CScene::setPointValue(const point_t& stPoint, int nValue) {
   const auto index = static_cast<size_t>(stPoint.x) + (static_cast<size_t>(stPoint.y) * GRID_SIZE);
-  const auto point = _map.at(index);
+  const auto point = _board.at(index);
   if (State::ERASED == point.state) {
     _cur_point = stPoint;
     setValue(nValue);
