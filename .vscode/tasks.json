@@ -75,6 +75,14 @@
       "group": "build",
       "dependsOn": "CMake: configure",
       "problemMatcher": []
+    },
+    {
+      "label": "CMake: generate coverage (Debug)",
+      "type": "shell",
+      "command": "cmake --build build --config Debug --target generate_coverage",
+      "group": "test",
+      "dependsOn": "CMake: configure",
+      "problemMatcher": []
     }
   ]
 }

@@ -1,0 +1,327 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+        <meta charset="utf-8"/>
+	    <title>scene.cpp</title>
+	    <link href="../../third-party/google-code-prettify/prettify-CppCoverage.css" type="text/css" rel="stylesheet" />
+	    <script type="text/javascript" src="../../third-party/google-code-prettify/prettify.js"></script>
+	</head>
+    <body onload="prettyPrint()">
+        <h4></h4>
+        <pre class="prettyprint lang-cpp linenums">
+#include "scene.h"
+
+#include &lt;cassert&gt;
+#include &lt;cmath&gt;
+#include &lt;filesystem&gt;
+#include &lt;fstream&gt;
+#include &lt;iostream&gt;
+
+#include "color.h"
+#include "display_symbol.h"
+#include "i18n.h"
+#include "puzzle_generator.h"
+#include "utility.inl"
+
+namespace {
+constexpr char KEY_ESC = 0x1B;
+constexpr char KEY_UNDO = 0x75;
+constexpr char KEY_ENTER = 0x0D;
+constexpr char KEY_UP = 0x48;
+constexpr char KEY_LEFT = 0x4B;
+constexpr char KEY_DOWN = 0x50;
+constexpr char KEY_RIGHT = 0x4D;
+
+<span style = "background-color:#dfd">PuzzleGenerator kDefaultPuzzleGenerator;</span>
+}  // namespace
+
+CScene::CScene(int index, IPuzzleGenerator* puzzle_generator)
+<span style = "background-color:#dfd">    : _max_column(static_cast&lt;int&gt;(pow(index, 2))),
+      _cur_point({0, 0}),
+      _puzzle_generator(puzzle_generator != nullptr ? puzzle_generator : &amp;kDefaultPuzzleGenerator) {
+  init();
+}</span>
+
+<span style = "background-color:#dfd">CScene::~CScene() = default;</span>
+
+<span style = "background-color:#fdd">void CScene::show() const {
+  ClearScreen();</span>
+
+<span style = "background-color:#fdd">  printUnderline();</span>
+
+<span style = "background-color:#fdd">  const auto&amp; row_blocks = _board.rowBlocks();</span>
+
+  // Get the number at the cursor position (if cursor is within bounds)
+<span style = "background-color:#fdd">  int highlighted_num = UNSELECTED;
+  if (_cur_point.y &gt;= 0 &amp;&amp; _cur_point.y &lt; _max_column) {
+    const CBlock&amp; cursor_block = row_blocks.at(static_cast&lt;size_t&gt;(_cur_point.y));
+    highlighted_num = cursor_block.getNumberValue(_cur_point.x);</span>
+  }
+
+<span style = "background-color:#fdd">  for (int row = 0; row &lt; _max_column; ++row) {
+    const CBlock&amp; block = row_blocks.at(static_cast&lt;size_t&gt;(row));
+    if (_cur_point.y == row) {
+      block.print(_cur_point.x, highlighted_num);
+    } else {
+      block.print(-1, highlighted_num);</span>
+    }
+<span style = "background-color:#fdd">    printUnderline(row);
+  }
+}</span>
+
+<span style = "background-color:#fdd">void CScene::printUnderline(int line_no) const {
+  auto is_curline = (_cur_point.y == line_no);
+  for (int column = 0; column &lt; _max_column; ++column) {
+    if ((column % BOX_SIZE) == 0 || line_no == -1 || ((line_no + 1) % BOX_SIZE) == 0) {
+      std::cout &lt;&lt; Color::Modifier(Color::BOLD, Color::BG_DEFAULT, Color::FG_RED) &lt;&lt; CORNER</span>
+                &lt;&lt; Color::Modifier();
+<span style = "background-color:#fdd">    } else {
+      std::cout &lt;&lt; CORNER;</span>
+    }
+<span style = "background-color:#fdd">    const char* third_symbol = (is_curline &amp;&amp; _cur_point.x == column) ? ARROW : LINE;
+    if (line_no == -1 || ((line_no + 1) % BOX_SIZE) == 0) {
+      std::cout &lt;&lt; Color::Modifier(Color::BOLD, Color::BG_DEFAULT, Color::FG_RED) &lt;&lt; LINE</span>
+                &lt;&lt; third_symbol &lt;&lt; LINE &lt;&lt; Color::Modifier();
+<span style = "background-color:#fdd">    } else {
+      std::cout &lt;&lt; LINE &lt;&lt; third_symbol &lt;&lt; LINE;</span>
+    }
+<span style = "background-color:#fdd">  }
+  std::cout &lt;&lt; Color::Modifier(Color::BOLD, Color::BG_DEFAULT, Color::FG_RED) &lt;&lt; CORNER</span>
+            &lt;&lt; Color::Modifier() &lt;&lt; '\n';
+<span style = "background-color:#fdd">}</span>
+
+<span style = "background-color:#dfd">void CScene::init() {
+  _board.reset();
+}</span>
+
+<span style = "background-color:#fdd">bool CScene::setCurValue(int nCurValue, int&amp; nLastValue) {
+  const auto index =</span>
+      static_cast&lt;size_t&gt;(_cur_point.x) + (static_cast&lt;size_t&gt;(_cur_point.y) * GRID_SIZE);
+<span style = "background-color:#fdd">  const auto point = _board.at(index);
+  if (point.state == State::ERASED) {
+    nLastValue = point.value;
+    setValue(nCurValue);
+    return true;</span>
+  }
+
+<span style = "background-color:#fdd">  return false;
+}</span>
+
+<span style = "background-color:#fdd">void CScene::setValue(const point_t&amp; point, int value) {
+  const auto index = static_cast&lt;size_t&gt;(point.x) + (static_cast&lt;size_t&gt;(point.y) * GRID_SIZE);
+  _board.at(index).value = value;
+}</span>
+
+<span style = "background-color:#fdd">void CScene::setValue(int value) {
+  auto point = _cur_point;
+  this-&gt;setValue(point, value);
+}</span>
+
+<span style = "background-color:#fdd">void CScene::eraseRandomGrids(int count) {
+  _puzzle_generator-&gt;EraseCells(_board, count);
+}</span>
+
+<span style = "background-color:#dfd">bool CScene::isComplete() {
+  const auto&amp; row_blocks = _board.rowBlocks();
+  const auto&amp; column_blocks = _board.columnBlocks();
+  const auto&amp; box_blocks = _board.boxBlocks();</span>
+
+  // If any block is not fully filled, the puzzle is not complete
+<span style = "background-color:#dfd">  for (size_t i = 0; i &lt; _board.size(); ++i) {
+    if (_board.at(i).value == UNSELECTED) {</span>
+<span style = "background-color:#fdd">      return false;</span>
+    }
+<span style = "background-color:#dfd">  }</span>
+
+  // Numbers in each block must also satisfy Sudoku rules
+<span style = "background-color:#dfd">  for (int row = 0; row &lt; GRID_SIZE; ++row) {
+    for (int col = 0; col &lt; GRID_SIZE; ++col) {</span>
+      if (!row_blocks.at(static_cast&lt;size_t&gt;(row)).isValid() ||
+<span style = "background-color:#dfd">          !column_blocks.at(static_cast&lt;size_t&gt;(col)).isValid() ||</span>
+          !box_blocks.at(static_cast&lt;size_t&gt;(row / BOX_SIZE))
+               .at(static_cast&lt;size_t&gt;(col / BOX_SIZE))
+               .isValid()) {
+<span style = "background-color:#fdd">        return false;</span>
+      }
+<span style = "background-color:#dfd">    }
+  }</span>
+
+<span style = "background-color:#dfd">  return true;
+}</span>
+
+<span style = "background-color:#fdd">bool CScene::save(const char* filename) {</span>
+  {
+<span style = "background-color:#fdd">    std::fstream file_stream;
+    file_stream.open(filename, std::fstream::in);
+    if (file_stream.is_open()) {
+      file_stream.close();
+      return false;</span>
+    }
+<span style = "background-color:#fdd">  }</span>
+
+<span style = "background-color:#fdd">  std::fstream file_stream;
+  file_stream.open(filename, std::fstream::in | std::fstream::out | std::fstream::app);</span>
+
+  // save board cells
+<span style = "background-color:#fdd">  for (size_t i = 0; i &lt; _board.size(); ++i) {
+    file_stream &lt;&lt; _board.at(i).value &lt;&lt; ' ' &lt;&lt; static_cast&lt;int&gt;(_board.at(i).state) &lt;&lt; '\n';
+  }</span>
+
+  // save _cur_point
+<span style = "background-color:#fdd">  file_stream &lt;&lt; _cur_point.x &lt;&lt; ' ' &lt;&lt; _cur_point.y &lt;&lt; '\n';</span>
+
+  // save _vCommand
+<span style = "background-color:#fdd">  file_stream &lt;&lt; _vCommand.size() &lt;&lt; '\n';
+  for (const CCommand&amp; command : _vCommand) {
+    point_t point = command.getPoint();
+    file_stream &lt;&lt; point.x &lt;&lt; ' ' &lt;&lt; point.y &lt;&lt; ' ' &lt;&lt; command.getPreValue() &lt;&lt; ' '</span>
+                &lt;&lt; command.getCurValue() &lt;&lt; '\n';
+<span style = "background-color:#fdd">  }</span>
+
+<span style = "background-color:#fdd">  file_stream.close();
+  return true;
+}</span>
+
+<span style = "background-color:#fdd">bool CScene::load(const char* filename) {
+  auto filepath = std::filesystem::path(filename);
+  if (!std::filesystem::exists(filepath)) {
+    return false;</span>
+  }
+
+<span style = "background-color:#fdd">  std::fstream file_stream;
+  file_stream.open(filename, std::fstream::in | std::fstream::out | std::fstream::app);</span>
+
+  // load board cells
+<span style = "background-color:#fdd">  for (size_t i = 0; i &lt; _board.size(); ++i) {</span>
+    int tmpState;
+<span style = "background-color:#fdd">    file_stream &gt;&gt; _board.at(i).value &gt;&gt; tmpState;
+    _board.at(i).state = static_cast&lt;State&gt;(tmpState);
+  }</span>
+
+  // load _cur_point
+<span style = "background-color:#fdd">  file_stream &gt;&gt; _cur_point.x &gt;&gt; _cur_point.y;</span>
+
+  // load _vCommand
+  int commandSize;
+<span style = "background-color:#fdd">  file_stream &gt;&gt; commandSize;
+  for (int i = 0; i &lt; commandSize; i++) {</span>
+    point_t point;
+    int preValue;
+    int curValue;
+<span style = "background-color:#fdd">    file_stream &gt;&gt; point.x &gt;&gt; point.y &gt;&gt; preValue &gt;&gt; curValue;
+    _vCommand.emplace_back(this, point, preValue, curValue);
+  }
+  return true;
+}</span>
+
+<span style = "background-color:#fdd">void CScene::play() {
+  show();</span>
+
+<span style = "background-color:#fdd">  char key = '\0';
+  while (true) {
+    key = static_cast&lt;char&gt;(_getch());</span>
+#ifdef _WIN32
+    // Arrow keys emit an extended key prefix (0x00 or 0xE0), followed by the scan code.
+<span style = "background-color:#fdd">    if (key == static_cast&lt;char&gt;(0x00) || key == static_cast&lt;char&gt;(0xE0)) {
+      key = static_cast&lt;char&gt;(_getch());</span>
+    }
+#endif
+<span style = "background-color:#fdd">    if (key &gt;= '0' &amp;&amp; key &lt;= '9') {
+      CCommand oCommand(this);
+      if (!oCommand.execute(key - '0')) {
+        std::cout &lt;&lt; "this number can't be modified." &lt;&lt; '\n';
+      } else {
+        _vCommand.push_back(std::move(oCommand));  // XXX: move without move constructor
+        show();
+        continue;</span>
+      }
+<span style = "background-color:#fdd">    }
+    if (key == KEY_ESC) {
+      Message(I18n::Instance().Get(I18n::Key::ASK_QUIT));
+      std::string strInput;
+      std::cin &gt;&gt; strInput;
+      if (strInput[0] == 'y' || strInput[0] == 'Y') {
+        Message(I18n::Instance().Get(I18n::Key::ASK_SAVE));
+        std::cin &gt;&gt; strInput;
+        if (strInput[0] == 'y' || strInput[0] == 'Y') {</span>
+          do {
+<span style = "background-color:#fdd">            Message(I18n::Instance().Get(I18n::Key::ASK_SAVE_PATH));
+            std::cin &gt;&gt; strInput;
+            if (!save(strInput.c_str())) {
+              Message(I18n::Instance().Get(I18n::Key::FILE_EXIST_ERROR));
+            } else {
+              break;</span>
+            }
+<span style = "background-color:#fdd">          } while (true);</span>
+        }
+<span style = "background-color:#fdd">        exit(0);
+      } else {
+        Message(I18n::Instance().Get(I18n::Key::CONTINUE));</span>
+      }
+<span style = "background-color:#fdd">    } else if (key == KEY_UNDO) {
+      if (_vCommand.empty()) {
+        Message(I18n::Instance().Get(I18n::Key::UNDO_ERROR));
+      } else {
+        CCommand&amp; oCommand = _vCommand.back();
+        oCommand.undo();
+        _vCommand.pop_back();
+        show();
+      }
+    } else if (key == KEY_LEFT) {
+      _cur_point.x = (_cur_point.x - 1) &lt; 0 ? 0 : _cur_point.x - 1;
+      show();
+    } else if (key == KEY_RIGHT) {
+      _cur_point.x = (_cur_point.x + 1) &gt; (GRID_SIZE - 1) ? (GRID_SIZE - 1) : _cur_point.x + 1;
+      show();
+    } else if (key == KEY_DOWN) {
+      _cur_point.y = (_cur_point.y + 1) &gt; (GRID_SIZE - 1) ? (GRID_SIZE - 1) : _cur_point.y + 1;
+      show();
+    } else if (key == KEY_UP) {
+      _cur_point.y = (_cur_point.y - 1) &lt; 0 ? 0 : _cur_point.y - 1;
+      show();
+    } else if (key == KEY_ENTER) {
+      if (isComplete()) {
+        Message(I18n::Instance().Get(I18n::Key::CONGRATULATION));
+        getchar();
+        exit(0);
+      } else {
+        Message(I18n::Instance().Get(I18n::Key::NOT_COMPLETED));</span>
+      }
+    }
+<span style = "background-color:#fdd">  }
+}</span>
+
+<span style = "background-color:#dfd">void CScene::generate() {
+  _puzzle_generator-&gt;GenerateSolvedBoard(_board);</span>
+
+<span style = "background-color:#dfd">  assert(isComplete());
+}</span>
+
+<span style = "background-color:#fdd">bool CScene::setPointValue(const point_t&amp; stPoint, int nValue) {
+  const auto index = static_cast&lt;size_t&gt;(stPoint.x) + (static_cast&lt;size_t&gt;(stPoint.y) * GRID_SIZE);
+  const auto point = _board.at(index);
+  if (State::ERASED == point.state) {
+    _cur_point = stPoint;
+    setValue(nValue);
+    return true;</span>
+  }
+
+<span style = "background-color:#fdd">  return false;
+}</span>
+
+<span style = "background-color:#fdd">point_t CScene::getCurPoint() { return _cur_point; }</span></pre>
+        <hr />
+        <table width="100%">
+            <thead>
+                <tr>
+                    <th align="center">
+                        <small>Generated by</small>
+                        <a href="https://github.com/OpenCppCoverage/OpenCppCoverage/releases">
+                            <strong>OpenCppCoverage (Version: 0.9.9.0)</strong>
+                        </a>
+                    </th>
+                </tr>
+            </thead>
+        </table>
+    </body>
+</html>

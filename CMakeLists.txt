@@ -97,3 +97,52 @@ else()
     VERBATIM
   )
 endif()
+
+# Code coverage generation via OpenCppCoverage (manual build target, Windows).
+if(WIN32)
+  string(REPLACE "/" "\\" PROJECT_SOURCE_DIR_WIN "${PROJECT_SOURCE_DIR}")
+
+  find_program(OPENCPPCOVERAGE_EXE
+    NAMES OpenCppCoverage OpenCppCoverage.exe
+    HINTS
+      "C:/Program Files/OpenCppCoverage"
+      "$ENV{LOCALAPPDATA}/Microsoft/WinGet/Links"
+  )
+
+  if(OPENCPPCOVERAGE_EXE)
+    add_custom_target(generate_coverage
+      COMMAND ${CMAKE_COMMAND} -E remove_directory ${PROJECT_SOURCE_DIR}/coverage/html
+      COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_SOURCE_DIR}/coverage/html
+      COMMAND ${OPENCPPCOVERAGE_EXE}
+        --cover_children
+        --modules "${PROJECT_SOURCE_DIR_WIN}\\bin\\Debug\\*"
+        --sources "${PROJECT_SOURCE_DIR_WIN}\\src\\*"
+        --excluded_sources "*tests*"
+        --excluded_sources "*build*"
+        --export_type "html:${PROJECT_SOURCE_DIR}/coverage/html"
+        --
+        ${CMAKE_CTEST_COMMAND} --test-dir ${PROJECT_BINARY_DIR} -C Debug --output-on-failure
+      WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+      COMMENT "Generating HTML code coverage report with OpenCppCoverage"
+      VERBATIM
+    )
+
+    if(TARGET sudoku_unit_tests)
+      add_dependencies(generate_coverage sudoku_unit_tests)
+    endif()
+  else()
+    add_custom_target(generate_coverage
+      COMMAND ${CMAKE_COMMAND} -E echo "OpenCppCoverage was not found. Install it first (see install_opencppcoverage.bat)."
+      COMMAND ${CMAKE_COMMAND} -E false
+      COMMENT "Cannot generate coverage because OpenCppCoverage is missing"
+      VERBATIM
+    )
+  endif()
+else()
+  add_custom_target(generate_coverage
+    COMMAND ${CMAKE_COMMAND} -E echo "generate_coverage is currently supported on Windows only."
+    COMMAND ${CMAKE_COMMAND} -E false
+    COMMENT "Coverage target is unavailable on this platform"
+    VERBATIM
+  )
+endif()

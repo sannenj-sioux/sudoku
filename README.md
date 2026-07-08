@@ -13,6 +13,18 @@ Contributions are welcome through pull requests for new features or bug fixes.
 3. No third-party library dependencies
 4. Runs in the console
 
+## VS Code Tasks
+- `CMake: configure`: Configure the CMake project into the `build` directory.
+- `CMake: build`: Build the project using the configured generator.
+- `CMake: clean`: Clean build outputs.
+- `CMake: configure & build`: Run configure and build in sequence.
+- `CTest: unit tests (Debug)`: Run all discovered unit tests in Debug config.
+- `CTest: unit tests (Release)`: Run all discovered unit tests in Release config.
+- `GTest: unit tests (Debug, colored)`: Run `sudoku_unit_tests` directly with colored output.
+- `GTest: unit tests (Release, colored)`: Run `sudoku_unit_tests` in Release mode with colored output.
+- `CMake: generate UML`: Generate UML diagrams via the `generate_uml` CMake target.
+- `CMake: generate coverage (Debug)`: Generate HTML code coverage report via the `generate_coverage` CMake target.
+
 ## Requirements
 1. cmake 3.12+
 2. C++17
@@ -26,12 +38,44 @@ cmake --build build --config Release
 ## Unit Tests (GoogleTest/GoogleMock)
 The test target uses GoogleTest/GoogleMock via CMake `FetchContent`.
 The dependency is downloaded automatically when CMake configures the project.
+All unit test cases are linked into a single executable: `sudoku_unit_tests`.
 
 ``` shell
 cmake -S . -B build
 cmake --build build --config Release
 ctest --test-dir build -C Release --output-on-failure
 ```
+
+Run the test executable directly with colored output:
+
+``` shell
+# Windows (Visual Studio generator)
+.\bin\Debug\sudoku_unit_tests.exe --gtest_color=yes
+```
+
+## Code Coverage (Windows)
+Coverage is generated with OpenCppCoverage.
+
+Install the tool:
+
+```bat
+install_opencppcoverage.bat
+```
+
+Generate HTML coverage from Debug tests via CMake:
+
+```bat
+cmake -S . -B build
+cmake --build build --config Debug --target generate_coverage
+```
+
+Open the report in:
+
+```text
+coverage/html/index.html
+```
+
+In VS Code you can run the task `CMake: generate coverage (Debug)`.
 
 ## Run
 The build step generates the `sudoku` executable in the `bin` directory.
@@ -69,6 +113,15 @@ For detailed setup notes, see `UML_WORKFLOW.md`.
 │--README.md
 │--install_cmake.bat
 │--install_clang_uml.bat
+│--install_opencppcoverage.bat
+│--interfaces/
+│  │--i_puzzle_generator.h
+│  │--i_scene.h
+│  │--i_scene_command.h
+│  └--mocks/
+│     │--mock_puzzle_generator.h
+│     │--mock_scene.h
+│     └--mock_scene_command.h
 │--src/
 │  │--main.cpp        // Program entry point
 │  │--scene.cpp/.h    // Game scene and interaction logic
@@ -78,6 +131,8 @@ For detailed setup notes, see `UML_WORKFLOW.md`.
 │  │--i18n.cpp/.h     // Localization support
 │  └--...
 │--tests/
+│  │--puzzle_generation_test.cpp
+│  │--scene_test.cpp
 │  └--performance_test.cpp
 └--uml/
    └--sudoku_class.puml

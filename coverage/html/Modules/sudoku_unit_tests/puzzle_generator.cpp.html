@@ -1,0 +1,155 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+        <meta charset="utf-8"/>
+	    <title>puzzle_generator.cpp</title>
+	    <link href="../../third-party/google-code-prettify/prettify-CppCoverage.css" type="text/css" rel="stylesheet" />
+	    <script type="text/javascript" src="../../third-party/google-code-prettify/prettify.js"></script>
+	</head>
+    <body onload="prettyPrint()">
+        <h4></h4>
+        <pre class="prettyprint lang-cpp linenums">
+#include "puzzle_generator.h"
+
+#include &lt;algorithm&gt;
+#include &lt;map&gt;
+#include &lt;string&gt;
+#include &lt;tuple&gt;
+#include &lt;vector&gt;
+
+#include "board.h"
+#include "common.h"
+#include "utility.inl"
+
+namespace {
+
+<span style = "background-color:#dfd">std::size_t ToIndex(int row, int column) {
+  return (static_cast&lt;std::size_t&gt;(row) * static_cast&lt;std::size_t&gt;(GRID_SIZE)) +</span>
+         static_cast&lt;std::size_t&gt;(column);
+<span style = "background-color:#dfd">}</span>
+
+<span style = "background-color:#dfd">void SetCell(Board&amp; board, int row, int column, int value, State state) {
+  point_value_t&amp; cell = board.at(ToIndex(row, column));
+  cell.value = value;
+  cell.state = state;
+}</span>
+
+}  // namespace
+
+<span style = "background-color:#dfd">void PuzzleGenerator::GenerateSolvedBoard(Board&amp; board) {
+  std::vector&lt;std::vector&lt;int&gt;&gt; matrix(static_cast&lt;std::size_t&gt;(GRID_SIZE),</span>
+                                       std::vector&lt;int&gt;(static_cast&lt;std::size_t&gt;(GRID_SIZE), 0));
+
+<span style = "background-color:#dfd">  for (int num = 0; num &lt; BOX_SIZE; ++num) {
+    std::vector&lt;int&gt; unit = ShuffleUnit();
+    const int start_index = num * BOX_SIZE;
+    for (int row = start_index; row &lt; start_index + BOX_SIZE; ++row) {
+      for (int column = start_index; column &lt; start_index + BOX_SIZE; ++column) {
+        matrix[row][column] = unit.back();
+        unit.pop_back();
+      }
+    }
+  }</span>
+
+<span style = "background-color:#dfd">  std::vector&lt;std::tuple&lt;int, int&gt;&gt; box_list;
+  box_list.reserve(static_cast&lt;std::size_t&gt;(CELL_COUNT));
+  for (int row = 0; row &lt; GRID_SIZE; ++row) {
+    for (int column = 0; column &lt; GRID_SIZE; ++column) {
+      if (matrix[row][column] == 0) {
+        box_list.emplace_back(row, column);</span>
+      }
+<span style = "background-color:#dfd">    }
+  }</span>
+
+<span style = "background-color:#dfd">  std::map&lt;std::string, std::vector&lt;int&gt;&gt; available_num{};
+  int full_num = 0;
+  const int empty_num = static_cast&lt;int&gt;(box_list.size());
+  while (full_num &lt; empty_num) {
+    const std::tuple&lt;int, int&gt; position = box_list[full_num];
+    const int row = std::get&lt;0&gt;(position);
+    const int column = std::get&lt;1&gt;(position);
+    std::vector&lt;int&gt; able_unit;
+    const std::string key = std::to_string(row) + "x" + std::to_string(column);
+    if (available_num.find(key) == available_num.end()) {
+      able_unit = GetUnit();
+      for (int box_row = row / BOX_SIZE * BOX_SIZE; box_row &lt; row / BOX_SIZE * BOX_SIZE + BOX_SIZE;
+           ++box_row) {
+        for (int box_column = column / BOX_SIZE * BOX_SIZE;
+             box_column &lt; column / BOX_SIZE * BOX_SIZE + BOX_SIZE; ++box_column) {
+          able_unit.erase(</span>
+              std::remove(able_unit.begin(), able_unit.end(), matrix[box_row][box_column]),
+              able_unit.end());
+<span style = "background-color:#dfd">        }
+      }
+      for (int current_column = 0; current_column &lt; GRID_SIZE; ++current_column) {
+        if (matrix[row][current_column] != 0) {
+          able_unit.erase(</span>
+              std::remove(able_unit.begin(), able_unit.end(), matrix[row][current_column]),
+              able_unit.end());
+        }
+<span style = "background-color:#dfd">      }
+      for (int current_row = 0; current_row &lt; GRID_SIZE; ++current_row) {
+        if (matrix[current_row][column] != 0) {
+          able_unit.erase(</span>
+              std::remove(able_unit.begin(), able_unit.end(), matrix[current_row][column]),
+              able_unit.end());
+        }
+<span style = "background-color:#dfd">      }
+      available_num[key] = able_unit;
+    } else {
+      able_unit = available_num[key];</span>
+    }
+
+<span style = "background-color:#dfd">    if (available_num[key].empty()) {
+      full_num -= 1;
+      if (available_num.find(key) != available_num.end()) {
+        available_num.erase(key);</span>
+      }
+<span style = "background-color:#dfd">      matrix[row][column] = 0;
+      continue;</span>
+    }
+
+<span style = "background-color:#dfd">    matrix[row][column] = available_num[key].back();
+    available_num[key].pop_back();
+    full_num += 1;
+  }</span>
+
+<span style = "background-color:#dfd">  board.reset();
+  for (int row = 0; row &lt; GRID_SIZE; ++row) {
+    for (int column = 0; column &lt; GRID_SIZE; ++column) {
+      SetCell(board, row, column, matrix[row][column], State::INITED);
+    }
+  }
+}</span>
+
+<span style = "background-color:#dfd">void PuzzleGenerator::EraseCells(Board&amp; board, int count) {
+  std::vector&lt;int&gt; cell_indexes(CELL_COUNT);
+  for (int i = 0; i &lt; CELL_COUNT; ++i) {
+    cell_indexes[i] = i;
+  }</span>
+
+<span style = "background-color:#dfd">  for (int i = 0; i &lt; count; ++i) {
+    const auto random_index =</span>
+        static_cast&lt;std::size_t&gt;(RandomInt(0, static_cast&lt;int&gt;(cell_indexes.size() - 1)));
+<span style = "background-color:#dfd">    board.at(static_cast&lt;std::size_t&gt;(cell_indexes.at(random_index))) =</span>
+        {static_cast&lt;int&gt;(UNSELECTED), State::ERASED};
+<span style = "background-color:#dfd">    cell_indexes.erase(cell_indexes.begin() +</span>
+                       static_cast&lt;std::vector&lt;int&gt;::difference_type&gt;(random_index));
+<span style = "background-color:#dfd">  }
+}</span>
+</pre>
+        <hr />
+        <table width="100%">
+            <thead>
+                <tr>
+                    <th align="center">
+                        <small>Generated by</small>
+                        <a href="https://github.com/OpenCppCoverage/OpenCppCoverage/releases">
+                            <strong>OpenCppCoverage (Version: 0.9.9.0)</strong>
+                        </a>
+                    </th>
+                </tr>
+            </thead>
+        </table>
+    </body>
+</html>
