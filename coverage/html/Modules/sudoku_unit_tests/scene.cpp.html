@@ -32,7 +32,7 @@ constexpr char KEY_LEFT = 0x4B;
 constexpr char KEY_DOWN = 0x50;
 constexpr char KEY_RIGHT = 0x4D;
 
-<span style = "background-color:#dfd">PuzzleGenerator kDefaultPuzzleGenerator;</span>
+PuzzleGenerator kDefaultPuzzleGenerator;
 }  // namespace
 
 CScene::CScene(int index, IPuzzleGenerator* puzzle_generator)
@@ -94,30 +94,30 @@ CScene::CScene(int index, IPuzzleGenerator* puzzle_generator)
   _board.reset();
 }</span>
 
-<span style = "background-color:#fdd">bool CScene::setCurValue(int nCurValue, int&amp; nLastValue) {
+<span style = "background-color:#dfd">bool CScene::setCurValue(int nCurValue, int&amp; nLastValue) {
   const auto index =</span>
       static_cast&lt;size_t&gt;(_cur_point.x) + (static_cast&lt;size_t&gt;(_cur_point.y) * GRID_SIZE);
-<span style = "background-color:#fdd">  const auto point = _board.at(index);
+<span style = "background-color:#dfd">  const auto point = _board.at(index);
   if (point.state == State::ERASED) {
     nLastValue = point.value;
     setValue(nCurValue);
     return true;</span>
   }
 
-<span style = "background-color:#fdd">  return false;
+<span style = "background-color:#dfd">  return false;
 }</span>
 
-<span style = "background-color:#fdd">void CScene::setValue(const point_t&amp; point, int value) {
+<span style = "background-color:#dfd">void CScene::setValue(const point_t&amp; point, int value) {
   const auto index = static_cast&lt;size_t&gt;(point.x) + (static_cast&lt;size_t&gt;(point.y) * GRID_SIZE);
   _board.at(index).value = value;
 }</span>
 
-<span style = "background-color:#fdd">void CScene::setValue(int value) {
+<span style = "background-color:#dfd">void CScene::setValue(int value) {
   auto point = _cur_point;
   this-&gt;setValue(point, value);
 }</span>
 
-<span style = "background-color:#fdd">void CScene::eraseRandomGrids(int count) {
+<span style = "background-color:#dfd">void CScene::eraseRandomGrids(int count) {
   _puzzle_generator-&gt;EraseCells(_board, count);
 }</span>
 
@@ -128,8 +128,8 @@ CScene::CScene(int index, IPuzzleGenerator* puzzle_generator)
 
   // If any block is not fully filled, the puzzle is not complete
 <span style = "background-color:#dfd">  for (size_t i = 0; i &lt; _board.size(); ++i) {
-    if (_board.at(i).value == UNSELECTED) {</span>
-<span style = "background-color:#fdd">      return false;</span>
+    if (_board.at(i).value == UNSELECTED) {
+      return false;</span>
     }
 <span style = "background-color:#dfd">  }</span>
 
@@ -141,7 +141,7 @@ CScene::CScene(int index, IPuzzleGenerator* puzzle_generator)
           !box_blocks.at(static_cast&lt;size_t&gt;(row / BOX_SIZE))
                .at(static_cast&lt;size_t&gt;(col / BOX_SIZE))
                .isValid()) {
-<span style = "background-color:#fdd">        return false;</span>
+<span style = "background-color:#dfd">        return false;</span>
       }
 <span style = "background-color:#dfd">    }
   }</span>
@@ -149,66 +149,66 @@ CScene::CScene(int index, IPuzzleGenerator* puzzle_generator)
 <span style = "background-color:#dfd">  return true;
 }</span>
 
-<span style = "background-color:#fdd">bool CScene::save(const char* filename) {</span>
+<span style = "background-color:#dfd">bool CScene::save(const char* filename) {</span>
   {
-<span style = "background-color:#fdd">    std::fstream file_stream;
+<span style = "background-color:#dfd">    std::fstream file_stream;
     file_stream.open(filename, std::fstream::in);
     if (file_stream.is_open()) {
       file_stream.close();
       return false;</span>
     }
-<span style = "background-color:#fdd">  }</span>
+<span style = "background-color:#dfd">  }</span>
 
-<span style = "background-color:#fdd">  std::fstream file_stream;
+<span style = "background-color:#dfd">  std::fstream file_stream;
   file_stream.open(filename, std::fstream::in | std::fstream::out | std::fstream::app);</span>
 
   // save board cells
-<span style = "background-color:#fdd">  for (size_t i = 0; i &lt; _board.size(); ++i) {
+<span style = "background-color:#dfd">  for (size_t i = 0; i &lt; _board.size(); ++i) {
     file_stream &lt;&lt; _board.at(i).value &lt;&lt; ' ' &lt;&lt; static_cast&lt;int&gt;(_board.at(i).state) &lt;&lt; '\n';
   }</span>
 
   // save _cur_point
-<span style = "background-color:#fdd">  file_stream &lt;&lt; _cur_point.x &lt;&lt; ' ' &lt;&lt; _cur_point.y &lt;&lt; '\n';</span>
+<span style = "background-color:#dfd">  file_stream &lt;&lt; _cur_point.x &lt;&lt; ' ' &lt;&lt; _cur_point.y &lt;&lt; '\n';</span>
 
   // save _vCommand
-<span style = "background-color:#fdd">  file_stream &lt;&lt; _vCommand.size() &lt;&lt; '\n';
+<span style = "background-color:#dfd">  file_stream &lt;&lt; _vCommand.size() &lt;&lt; '\n';
   for (const CCommand&amp; command : _vCommand) {
     point_t point = command.getPoint();
     file_stream &lt;&lt; point.x &lt;&lt; ' ' &lt;&lt; point.y &lt;&lt; ' ' &lt;&lt; command.getPreValue() &lt;&lt; ' '</span>
                 &lt;&lt; command.getCurValue() &lt;&lt; '\n';
-<span style = "background-color:#fdd">  }</span>
+<span style = "background-color:#dfd">  }</span>
 
-<span style = "background-color:#fdd">  file_stream.close();
+<span style = "background-color:#dfd">  file_stream.close();
   return true;
 }</span>
 
-<span style = "background-color:#fdd">bool CScene::load(const char* filename) {
+<span style = "background-color:#dfd">bool CScene::load(const char* filename) {
   auto filepath = std::filesystem::path(filename);
   if (!std::filesystem::exists(filepath)) {
     return false;</span>
   }
 
-<span style = "background-color:#fdd">  std::fstream file_stream;
+<span style = "background-color:#dfd">  std::fstream file_stream;
   file_stream.open(filename, std::fstream::in | std::fstream::out | std::fstream::app);</span>
 
   // load board cells
-<span style = "background-color:#fdd">  for (size_t i = 0; i &lt; _board.size(); ++i) {</span>
+<span style = "background-color:#dfd">  for (size_t i = 0; i &lt; _board.size(); ++i) {</span>
     int tmpState;
-<span style = "background-color:#fdd">    file_stream &gt;&gt; _board.at(i).value &gt;&gt; tmpState;
+<span style = "background-color:#dfd">    file_stream &gt;&gt; _board.at(i).value &gt;&gt; tmpState;
     _board.at(i).state = static_cast&lt;State&gt;(tmpState);
   }</span>
 
   // load _cur_point
-<span style = "background-color:#fdd">  file_stream &gt;&gt; _cur_point.x &gt;&gt; _cur_point.y;</span>
+<span style = "background-color:#dfd">  file_stream &gt;&gt; _cur_point.x &gt;&gt; _cur_point.y;</span>
 
   // load _vCommand
   int commandSize;
-<span style = "background-color:#fdd">  file_stream &gt;&gt; commandSize;
+<span style = "background-color:#dfd">  file_stream &gt;&gt; commandSize;
   for (int i = 0; i &lt; commandSize; i++) {</span>
     point_t point;
     int preValue;
     int curValue;
-<span style = "background-color:#fdd">    file_stream &gt;&gt; point.x &gt;&gt; point.y &gt;&gt; preValue &gt;&gt; curValue;
+<span style = "background-color:#dfd">    file_stream &gt;&gt; point.x &gt;&gt; point.y &gt;&gt; preValue &gt;&gt; curValue;
     _vCommand.emplace_back(this, point, preValue, curValue);
   }
   return true;
@@ -297,7 +297,7 @@ CScene::CScene(int index, IPuzzleGenerator* puzzle_generator)
 <span style = "background-color:#dfd">  assert(isComplete());
 }</span>
 
-<span style = "background-color:#fdd">bool CScene::setPointValue(const point_t&amp; stPoint, int nValue) {
+<span style = "background-color:#dfd">bool CScene::setPointValue(const point_t&amp; stPoint, int nValue) {
   const auto index = static_cast&lt;size_t&gt;(stPoint.x) + (static_cast&lt;size_t&gt;(stPoint.y) * GRID_SIZE);
   const auto point = _board.at(index);
   if (State::ERASED == point.state) {
@@ -306,10 +306,10 @@ CScene::CScene(int index, IPuzzleGenerator* puzzle_generator)
     return true;</span>
   }
 
-<span style = "background-color:#fdd">  return false;
+<span style = "background-color:#dfd">  return false;
 }</span>
 
-<span style = "background-color:#fdd">point_t CScene::getCurPoint() { return _cur_point; }</span></pre>
+<span style = "background-color:#dfd">point_t CScene::getCurPoint() { return _cur_point; }</span></pre>
         <hr />
         <table width="100%">
             <thead>

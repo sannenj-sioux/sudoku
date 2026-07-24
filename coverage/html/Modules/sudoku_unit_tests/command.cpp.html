@@ -14,7 +14,7 @@
 <span style = "background-color:#fdd">CCommand::CCommand(ISceneCommand* pOwner) : _pOwner(pOwner) {}</span>
 
 CCommand::CCommand(ISceneCommand* pOwner, const point_t&amp; point, int preValue, int curValue)
-<span style = "background-color:#fdd">    : _pOwner(pOwner), _stPoint(point), _nPreValue(preValue), _nCurValue(curValue) {}</span>
+<span style = "background-color:#dfd">    : _pOwner(pOwner), _stPoint(point), _nPreValue(preValue), _nCurValue(curValue) {}</span>
 
 CCommand::CCommand(const CCommand&amp; rhs)
 <span style = "background-color:#fdd">    : _pOwner(rhs._pOwner),
@@ -22,7 +22,7 @@ CCommand::CCommand(const CCommand&amp; rhs)
       _nPreValue(rhs._nPreValue),
       _nCurValue(rhs._nCurValue) {}</span>
 
-<span style = "background-color:#fdd">CCommand::~CCommand() {}</span>
+<span style = "background-color:#dfd">CCommand::~CCommand() {}</span>
 
 <span style = "background-color:#fdd">bool CCommand::execute(int nInputValue) {
   if (_pOwner == nullptr) {

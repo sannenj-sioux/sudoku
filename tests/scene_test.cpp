@@ -4,6 +4,7 @@
 #include <filesystem>
 #include <fstream>
 #include <memory>
+#include <string>
 
 #include "board.h"
 #include "common.h"
@@ -12,6 +13,18 @@
 #include "mocks/mock_puzzle_generator.h"
 #include "scene.h"
 
+namespace {
+void FillSolvedBoard(Board& board) {
+  for (int row = 0; row < GRID_SIZE; ++row) {
+    for (int col = 0; col < GRID_SIZE; ++col) {
+      const auto index = static_cast<size_t>(row * GRID_SIZE + col);
+      board.at(index).value = (row * BOX_SIZE + row / BOX_SIZE + col) % GRID_SIZE + 1;
+      board.at(index).state = State::INITED;
+    }
+  }
+}
+}  // namespace
+
 TEST(SceneTest, GenerateDelegatesToPuzzleGenerator) {
   MockPuzzleGenerator mock_generator;
   std::unique_ptr<IScene> scene = std::make_unique<CScene>(3, &mock_generator);
@@ -19,13 +32,7 @@ TEST(SceneTest, GenerateDelegatesToPuzzleGenerator) {
   EXPECT_CALL(mock_generator, GenerateSolvedBoard(::testing::_))
       .Times(1)
       .WillOnce(::testing::Invoke([](Board& board) {
-        for (int row = 0; row < GRID_SIZE; ++row) {
-          for (int col = 0; col < GRID_SIZE; ++col) {
-            const auto index = static_cast<size_t>(row * GRID_SIZE + col);
-            board.at(index).value = (row * BOX_SIZE + row / BOX_SIZE + col) % GRID_SIZE + 1;
-            board.at(index).state = State::INITED;
-          }
-        }
+        FillSolvedBoard(board);
       }));
 
   scene->generate();
@@ -50,6 +57,14 @@ TEST(SceneTest, SetPointValueReturnsFalseForInitedCell) {
   CScene scene;
 
   EXPECT_FALSE(scene.setPointValue({0, 0}, 5));
+}
+
+TEST(SceneTest, SetCurValueReturnsFalseForInitedCursorCell) {
+  CScene scene;
+
+  int last_value = 99;
+  EXPECT_FALSE(scene.setCurValue(5, last_value));
+  EXPECT_EQ(last_value, 99);
 }
 
 TEST(SceneTest, SetPointValueAndSetCurValueWorkForErasedCell) {
@@ -132,5 +147,60 @@ TEST(SceneTest, SaveAndLoadRoundTripPreservesCursorAndEditableCellValue) {
   EXPECT_TRUE(loaded_scene.setCurValue(8, loaded_previous_value));
   EXPECT_EQ(loaded_previous_value, 6);
 
+  std::filesystem::remove(save_path);
+}
+
+TEST(SceneTest, IsCompleteReturnsFalseForFilledButInvalidBoard) {
+  MockPuzzleGenerator mock_generator;
+  CScene scene(3, &mock_generator);
+
+  EXPECT_CALL(mock_generator, EraseCells(::testing::_, ::testing::_))
+      .Times(1)
+      .WillOnce(::testing::Invoke([](Board& board, int) {
+        FillSolvedBoard(board);
+        board.at(1).value = board.at(0).value;
+      }));
+
+  scene.eraseRandomGrids(0);
+
+  EXPECT_FALSE(scene.isComplete());
+}
+
+TEST(SceneTest, LoadWithCommandHistoryThenSaveSerializesCommands) {
+  const auto load_path =
+      std::filesystem::temp_directory_path() / "scene_test_load_with_commands_source.sav";
+  const auto save_path =
+      std::filesystem::temp_directory_path() / "scene_test_load_with_commands_dest.sav";
+
+  std::filesystem::remove(load_path);
+  std::filesystem::remove(save_path);
+
+  {
+    std::ofstream source(load_path.string());
+    for (int i = 0; i < CELL_COUNT; ++i) {
+      source << 0 << ' ' << static_cast<int>(State::INITED) << '\n';
+    }
+    source << 2 << ' ' << 3 << '\n';
+    source << 1 << '\n';
+    source << 4 << ' ' << 5 << ' ' << 7 << ' ' << 9 << '\n';
+  }
+
+  CScene scene;
+  EXPECT_TRUE(scene.load(load_path.string().c_str()));
+  EXPECT_TRUE(scene.save(save_path.string().c_str()));
+
+  std::ifstream saved(save_path.string());
+  std::string line;
+  std::string last_non_empty_line;
+  while (std::getline(saved, line)) {
+    if (!line.empty()) {
+      last_non_empty_line = line;
+    }
+  }
+  saved.close();
+
+  EXPECT_EQ(last_non_empty_line, "4 5 7 9");
+
+  std::filesystem::remove(load_path);
   std::filesystem::remove(save_path);
 }
