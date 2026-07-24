@@ -6,6 +6,7 @@
 #include <fstream>
 #include <iostream>
 
+#include "console_scene_input.h"
 #include "console_scene_renderer.h"
 #include "i18n.h"
 #include "puzzle_generator.h"
@@ -22,13 +23,16 @@ constexpr char KEY_RIGHT = 0x4D;
 
 PuzzleGenerator kDefaultPuzzleGenerator;
 ConsoleSceneRenderer kDefaultSceneRenderer;
+ConsoleSceneInput kDefaultSceneInput;
 }  // namespace
 
-CScene::CScene(int index, IPuzzleGenerator* puzzle_generator, const ISceneRenderer* scene_renderer)
+CScene::CScene(int index, IPuzzleGenerator* puzzle_generator, const ISceneRenderer* scene_renderer,
+               ISceneInput* scene_input)
     : _max_column(static_cast<int>(pow(index, 2))),
       _cur_point({0, 0}),
       _puzzle_generator(puzzle_generator != nullptr ? puzzle_generator : &kDefaultPuzzleGenerator),
-      _scene_renderer(scene_renderer != nullptr ? scene_renderer : &kDefaultSceneRenderer) {
+      _scene_renderer(scene_renderer != nullptr ? scene_renderer : &kDefaultSceneRenderer),
+      _scene_input(scene_input != nullptr ? scene_input : &kDefaultSceneInput) {
   init();
 }
 
@@ -167,11 +171,11 @@ void CScene::play() {
 
   char key = '\0';
   while (true) {
-    key = static_cast<char>(_getch());
+    key = _scene_input->ReadKey();
 #ifdef _WIN32
     // Arrow keys emit an extended key prefix (0x00 or 0xE0), followed by the scan code.
     if (key == static_cast<char>(0x00) || key == static_cast<char>(0xE0)) {
-      key = static_cast<char>(_getch());
+      key = _scene_input->ReadKey();
     }
 #endif
     if (key >= '0' && key <= '9') {
@@ -186,15 +190,14 @@ void CScene::play() {
     }
     if (key == KEY_ESC) {
       Message(I18n::Instance().Get(I18n::Key::ASK_QUIT));
-      std::string strInput;
-      std::cin >> strInput;
+      std::string strInput = _scene_input->ReadToken();
       if (strInput[0] == 'y' || strInput[0] == 'Y') {
         Message(I18n::Instance().Get(I18n::Key::ASK_SAVE));
-        std::cin >> strInput;
+        strInput = _scene_input->ReadToken();
         if (strInput[0] == 'y' || strInput[0] == 'Y') {
           do {
             Message(I18n::Instance().Get(I18n::Key::ASK_SAVE_PATH));
-            std::cin >> strInput;
+            strInput = _scene_input->ReadToken();
             if (!save(strInput.c_str())) {
               Message(I18n::Instance().Get(I18n::Key::FILE_EXIST_ERROR));
             } else {
@@ -202,7 +205,7 @@ void CScene::play() {
             }
           } while (true);
         }
-        exit(0);
+        return;
       } else {
         Message(I18n::Instance().Get(I18n::Key::CONTINUE));
       }
@@ -230,8 +233,8 @@ void CScene::play() {
     } else if (key == KEY_ENTER) {
       if (isComplete()) {
         Message(I18n::Instance().Get(I18n::Key::CONGRATULATION));
-        getchar();
-        exit(0);
+        _scene_input->WaitForKey();
+        return;
       } else {
         Message(I18n::Instance().Get(I18n::Key::NOT_COMPLETED));
       }

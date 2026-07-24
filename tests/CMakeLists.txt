@@ -31,6 +31,7 @@ include(GoogleTest)
 set(PERFORMANCE_TEST_FILES
     ../src/board.cpp
     ../src/block.cpp
+    ../src/console_scene_input.cpp
     ../src/console_scene_renderer.cpp
     ../src/command.cpp
     ../src/i18n.cpp
@@ -53,6 +54,7 @@ endif()
 set(UNIT_TEST_FILES
     ../src/board.cpp
     ../src/block.cpp
+    ../src/console_scene_input.cpp
     ../src/console_scene_renderer.cpp
     ../src/command.cpp
     ../src/i18n.cpp

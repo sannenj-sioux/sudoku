@@ -5,6 +5,7 @@
 #include "board.h"
 #include "command.h"
 #include "common.h"
+#include "i_scene_input.h"
 #include "i_puzzle_generator.h"
 #include "i_scene_renderer.h"
 #include "i_scene.h"
@@ -14,7 +15,7 @@
 class CScene : public IScene, public ISceneCommand {
  public:
   CScene(int index = 3, IPuzzleGenerator* puzzle_generator = nullptr,
-         const ISceneRenderer* scene_renderer = nullptr);
+    const ISceneRenderer* scene_renderer = nullptr, ISceneInput* scene_input = nullptr);
   virtual ~CScene();
 
 #pragma region IScene
@@ -46,6 +47,7 @@ class CScene : public IScene, public ISceneCommand {
   Board _board;
   IPuzzleGenerator* _puzzle_generator;
   const ISceneRenderer* _scene_renderer;
+  ISceneInput* _scene_input;
 
   std::vector<CCommand> _vCommand;
 };

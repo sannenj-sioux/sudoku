@@ -11,10 +11,13 @@
 #include "i_scene.h"
 #include "i_scene_command.h"
 #include "mocks/mock_puzzle_generator.h"
+#include "mocks/mock_scene_input.h"
 #include "mocks/mock_scene_renderer.h"
 #include "scene.h"
 
 namespace {
+class StopPlayLoopException {};
+
 class TestableScene : public CScene {
  public:
   using CScene::CScene;
@@ -67,6 +70,42 @@ TEST(SceneTest, ShowDelegatesToSceneRenderer) {
       .Times(1);
 
   scene.ShowForTest();
+}
+
+TEST(SceneTest, PlayQuitsWhenEscThenConfirmAndNoSave) {
+  MockSceneRenderer mock_renderer;
+  MockSceneInput mock_input;
+  CScene scene(3, nullptr, &mock_renderer, &mock_input);
+
+  EXPECT_CALL(mock_renderer, Render(::testing::_, ::testing::_, GRID_SIZE)).Times(1);
+
+  {
+    ::testing::InSequence sequence;
+    EXPECT_CALL(mock_input, ReadKey()).WillOnce(::testing::Return(static_cast<char>(0x1B)));
+    EXPECT_CALL(mock_input, ReadToken()).WillOnce(::testing::Return("y"));
+    EXPECT_CALL(mock_input, ReadToken()).WillOnce(::testing::Return("n"));
+  }
+
+  EXPECT_NO_THROW(scene.play());
+}
+
+TEST(SceneTest, PlayHandlesExtendedArrowKeyPrefixAndReRenders) {
+  MockSceneRenderer mock_renderer;
+  MockSceneInput mock_input;
+  CScene scene(3, nullptr, &mock_renderer, &mock_input);
+
+  EXPECT_CALL(mock_renderer, Render(::testing::_, ::testing::_, GRID_SIZE)).Times(2);
+
+  {
+    ::testing::InSequence sequence;
+    EXPECT_CALL(mock_input, ReadKey()).WillOnce(::testing::Return(static_cast<char>(0xE0)));
+    EXPECT_CALL(mock_input, ReadKey()).WillOnce(::testing::Return(static_cast<char>(0x4D)));
+    EXPECT_CALL(mock_input, ReadKey()).WillOnce(::testing::InvokeWithoutArgs([]() -> char {
+      throw StopPlayLoopException();
+    }));
+  }
+
+  EXPECT_THROW(scene.play(), StopPlayLoopException);
 }
 
 TEST(SceneTest, IsCompleteReturnsFalseForNewScene) {

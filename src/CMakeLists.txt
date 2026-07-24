@@ -4,6 +4,7 @@
 set(SOURCE_FILES
     board.cpp
     block.cpp
+    console_scene_input.cpp
     console_scene_renderer.cpp
     command.cpp
     game.cpp
