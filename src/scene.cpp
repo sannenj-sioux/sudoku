@@ -9,18 +9,11 @@
 #include "console_scene_input.h"
 #include "console_scene_renderer.h"
 #include "i18n.h"
+#include "key_definitions.h"
 #include "puzzle_generator.h"
 #include "utility.inl"
 
 namespace {
-constexpr char KEY_ESC = 0x1B;
-constexpr char KEY_UNDO = 0x75;
-constexpr char KEY_ENTER = 0x0D;
-constexpr char KEY_UP = 0x48;
-constexpr char KEY_LEFT = 0x4B;
-constexpr char KEY_DOWN = 0x50;
-constexpr char KEY_RIGHT = 0x4D;
-
 PuzzleGenerator kDefaultPuzzleGenerator;
 ConsoleSceneRenderer kDefaultSceneRenderer;
 ConsoleSceneInput kDefaultSceneInput;
@@ -174,7 +167,7 @@ void CScene::play() {
     key = _scene_input->ReadKey();
 #ifdef _WIN32
     // Arrow keys emit an extended key prefix (0x00 or 0xE0), followed by the scan code.
-    if (key == static_cast<char>(0x00) || key == static_cast<char>(0xE0)) {
+    if (key == SceneKeys::kExtendedPrefix0 || key == SceneKeys::kExtendedPrefixE0) {
       key = _scene_input->ReadKey();
     }
 #endif
@@ -188,7 +181,7 @@ void CScene::play() {
         continue;
       }
     }
-    if (key == KEY_ESC) {
+    if (key == SceneKeys::kEsc) {
       Message(I18n::Instance().Get(I18n::Key::ASK_QUIT));
       std::string strInput = _scene_input->ReadToken();
       if (strInput[0] == 'y' || strInput[0] == 'Y') {
@@ -209,7 +202,7 @@ void CScene::play() {
       } else {
         Message(I18n::Instance().Get(I18n::Key::CONTINUE));
       }
-    } else if (key == KEY_UNDO) {
+    } else if (key == SceneKeys::kUndo) {
       if (_vCommand.empty()) {
         Message(I18n::Instance().Get(I18n::Key::UNDO_ERROR));
       } else {
@@ -218,19 +211,19 @@ void CScene::play() {
         _vCommand.pop_back();
         show();
       }
-    } else if (key == KEY_LEFT) {
+    } else if (key == SceneKeys::kLeft) {
       _cur_point.x = (_cur_point.x - 1) < 0 ? 0 : _cur_point.x - 1;
       show();
-    } else if (key == KEY_RIGHT) {
+    } else if (key == SceneKeys::kRight) {
       _cur_point.x = (_cur_point.x + 1) > (GRID_SIZE - 1) ? (GRID_SIZE - 1) : _cur_point.x + 1;
       show();
-    } else if (key == KEY_DOWN) {
+    } else if (key == SceneKeys::kDown) {
       _cur_point.y = (_cur_point.y + 1) > (GRID_SIZE - 1) ? (GRID_SIZE - 1) : _cur_point.y + 1;
       show();
-    } else if (key == KEY_UP) {
+    } else if (key == SceneKeys::kUp) {
       _cur_point.y = (_cur_point.y - 1) < 0 ? 0 : _cur_point.y - 1;
       show();
-    } else if (key == KEY_ENTER) {
+    } else if (key == SceneKeys::kEnter) {
       if (isComplete()) {
         Message(I18n::Instance().Get(I18n::Key::CONGRATULATION));
         _scene_input->WaitForKey();

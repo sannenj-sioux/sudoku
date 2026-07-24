@@ -11,33 +11,33 @@
         <pre class="prettyprint lang-cpp linenums">
 ï»¿#include "command.h"
 
-<span style = "background-color:#fdd">CCommand::CCommand(ISceneCommand* pOwner) : _pOwner(pOwner) {}</span>
+<span style = "background-color:#dfd">CCommand::CCommand(ISceneCommand* pOwner) : _pOwner(pOwner) {}</span>
 
 CCommand::CCommand(ISceneCommand* pOwner, const point_t&amp; point, int preValue, int curValue)
 <span style = "background-color:#dfd">    : _pOwner(pOwner), _stPoint(point), _nPreValue(preValue), _nCurValue(curValue) {}</span>
 
 CCommand::CCommand(const CCommand&amp; rhs)
-<span style = "background-color:#fdd">    : _pOwner(rhs._pOwner),
+<span style = "background-color:#dfd">    : _pOwner(rhs._pOwner),
       _stPoint(rhs._stPoint),
       _nPreValue(rhs._nPreValue),
       _nCurValue(rhs._nCurValue) {}</span>
 
 <span style = "background-color:#dfd">CCommand::~CCommand() {}</span>
 
-<span style = "background-color:#fdd">bool CCommand::execute(int nInputValue) {
-  if (_pOwner == nullptr) {
-    return false;</span>
+<span style = "background-color:#dfd">bool CCommand::execute(int nInputValue) {
+  if (_pOwner == nullptr) {</span>
+<span style = "background-color:#fdd">    return false;</span>
   }
 
-<span style = "background-color:#fdd">  _stPoint = _pOwner-&gt;getCurPoint();
+<span style = "background-color:#dfd">  _stPoint = _pOwner-&gt;getCurPoint();
   return _pOwner-&gt;setCurValue(nInputValue, _nPreValue);
 }</span>
 
-<span style = "background-color:#fdd">void CCommand::undo() {
+<span style = "background-color:#dfd">void CCommand::undo() {
   if (_pOwner != nullptr) {
     _pOwner-&gt;setPointValue(_stPoint, _nPreValue);</span>
   }
-<span style = "background-color:#fdd">}</span></pre>
+<span style = "background-color:#dfd">}</span></pre>
         <hr />
         <table width="100%">
             <thead>

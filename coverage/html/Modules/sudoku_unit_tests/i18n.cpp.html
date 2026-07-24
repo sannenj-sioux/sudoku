@@ -46,9 +46,9 @@ const I18n::Dict CHINESE_DICT = {
 }  // namespace
 
 // Default English
-<span style = "background-color:#fdd">I18n::I18n() : dict_(&amp;ENGLISH_DICT) {}</span>
+<span style = "background-color:#dfd">I18n::I18n() : dict_(&amp;ENGLISH_DICT) {}</span>
 
-<span style = "background-color:#fdd">I18n&amp; I18n::Instance() {
+<span style = "background-color:#dfd">I18n&amp; I18n::Instance() {
   static I18n i18n;
   return i18n;
 }</span>
@@ -67,7 +67,7 @@ const I18n::Dict CHINESE_DICT = {
   }
 <span style = "background-color:#fdd">}</span>
 
-<span style = "background-color:#fdd">std::string I18n::Get(Key key) const {
+<span style = "background-color:#dfd">std::string I18n::Get(Key key) const {
   assert(dict_-&gt;count(key));
   return dict_-&gt;at(key);
 }</span></pre>

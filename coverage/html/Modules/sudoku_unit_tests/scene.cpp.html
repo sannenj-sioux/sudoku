@@ -17,29 +17,26 @@
 #include &lt;fstream&gt;
 #include &lt;iostream&gt;
 
+#include "console_scene_input.h"
 #include "console_scene_renderer.h"
 #include "i18n.h"
+#include "key_definitions.h"
 #include "puzzle_generator.h"
 #include "utility.inl"
 
 namespace {
-constexpr char KEY_ESC = 0x1B;
-constexpr char KEY_UNDO = 0x75;
-constexpr char KEY_ENTER = 0x0D;
-constexpr char KEY_UP = 0x48;
-constexpr char KEY_LEFT = 0x4B;
-constexpr char KEY_DOWN = 0x50;
-constexpr char KEY_RIGHT = 0x4D;
-
 PuzzleGenerator kDefaultPuzzleGenerator;
 ConsoleSceneRenderer kDefaultSceneRenderer;
+ConsoleSceneInput kDefaultSceneInput;
 }  // namespace
 
-CScene::CScene(int index, IPuzzleGenerator* puzzle_generator, const ISceneRenderer* scene_renderer)
+CScene::CScene(int index, IPuzzleGenerator* puzzle_generator, const ISceneRenderer* scene_renderer,
+               ISceneInput* scene_input)
 <span style = "background-color:#dfd">    : _max_column(static_cast&lt;int&gt;(pow(index, 2))),
       _cur_point({0, 0}),
       _puzzle_generator(puzzle_generator != nullptr ? puzzle_generator : &amp;kDefaultPuzzleGenerator),
-      _scene_renderer(scene_renderer != nullptr ? scene_renderer : &amp;kDefaultSceneRenderer) {
+      _scene_renderer(scene_renderer != nullptr ? scene_renderer : &amp;kDefaultSceneRenderer),
+      _scene_input(scene_input != nullptr ? scene_input : &amp;kDefaultSceneInput) {
   init();
 }</span>
 
@@ -173,19 +170,19 @@ CScene::CScene(int index, IPuzzleGenerator* puzzle_generator, const ISceneRender
   return true;
 }</span>
 
-<span style = "background-color:#fdd">void CScene::play() {
+<span style = "background-color:#dfd">void CScene::play() {
   show();</span>
 
-<span style = "background-color:#fdd">  char key = '\0';
+<span style = "background-color:#dfd">  char key = '\0';
   while (true) {
-    key = static_cast&lt;char&gt;(_getch());</span>
+    key = _scene_input-&gt;ReadKey();</span>
 #ifdef _WIN32
     // Arrow keys emit an extended key prefix (0x00 or 0xE0), followed by the scan code.
-<span style = "background-color:#fdd">    if (key == static_cast&lt;char&gt;(0x00) || key == static_cast&lt;char&gt;(0xE0)) {
-      key = static_cast&lt;char&gt;(_getch());</span>
+<span style = "background-color:#dfd">    if (key == SceneKeys::kExtendedPrefix0 || key == SceneKeys::kExtendedPrefixE0) {
+      key = _scene_input-&gt;ReadKey();</span>
     }
 #endif
-<span style = "background-color:#fdd">    if (key &gt;= '0' &amp;&amp; key &lt;= '9') {
+<span style = "background-color:#dfd">    if (key &gt;= '0' &amp;&amp; key &lt;= '9') {
       CCommand oCommand(this);
       if (!oCommand.execute(key - '0')) {
         std::cout &lt;&lt; "this number can't be modified." &lt;&lt; '\n';
@@ -194,30 +191,29 @@ CScene::CScene(int index, IPuzzleGenerator* puzzle_generator, const ISceneRender
         show();
         continue;</span>
       }
-<span style = "background-color:#fdd">    }
-    if (key == KEY_ESC) {
+<span style = "background-color:#dfd">    }
+    if (key == SceneKeys::kEsc) {
       Message(I18n::Instance().Get(I18n::Key::ASK_QUIT));
-      std::string strInput;
-      std::cin &gt;&gt; strInput;
+      std::string strInput = _scene_input-&gt;ReadToken();
       if (strInput[0] == 'y' || strInput[0] == 'Y') {
         Message(I18n::Instance().Get(I18n::Key::ASK_SAVE));
-        std::cin &gt;&gt; strInput;
+        strInput = _scene_input-&gt;ReadToken();
         if (strInput[0] == 'y' || strInput[0] == 'Y') {</span>
           do {
-<span style = "background-color:#fdd">            Message(I18n::Instance().Get(I18n::Key::ASK_SAVE_PATH));
-            std::cin &gt;&gt; strInput;
+<span style = "background-color:#dfd">            Message(I18n::Instance().Get(I18n::Key::ASK_SAVE_PATH));
+            strInput = _scene_input-&gt;ReadToken();
             if (!save(strInput.c_str())) {
               Message(I18n::Instance().Get(I18n::Key::FILE_EXIST_ERROR));
             } else {
               break;</span>
             }
-<span style = "background-color:#fdd">          } while (true);</span>
+<span style = "background-color:#dfd">          } while (true);</span>
         }
-<span style = "background-color:#fdd">        exit(0);
-      } else {
-        Message(I18n::Instance().Get(I18n::Key::CONTINUE));</span>
+<span style = "background-color:#dfd">        return;</span>
+<span style = "background-color:#fdd">      } else {</span>
+<span style = "background-color:#dfd">        Message(I18n::Instance().Get(I18n::Key::CONTINUE));</span>
       }
-<span style = "background-color:#fdd">    } else if (key == KEY_UNDO) {
+<span style = "background-color:#dfd">    } else if (key == SceneKeys::kUndo) {
       if (_vCommand.empty()) {
         Message(I18n::Instance().Get(I18n::Key::UNDO_ERROR));
       } else {
@@ -226,28 +222,28 @@ CScene::CScene(int index, IPuzzleGenerator* puzzle_generator, const ISceneRender
         _vCommand.pop_back();
         show();
       }
-    } else if (key == KEY_LEFT) {
+    } else if (key == SceneKeys::kLeft) {
       _cur_point.x = (_cur_point.x - 1) &lt; 0 ? 0 : _cur_point.x - 1;
       show();
-    } else if (key == KEY_RIGHT) {
+    } else if (key == SceneKeys::kRight) {
       _cur_point.x = (_cur_point.x + 1) &gt; (GRID_SIZE - 1) ? (GRID_SIZE - 1) : _cur_point.x + 1;
       show();
-    } else if (key == KEY_DOWN) {
+    } else if (key == SceneKeys::kDown) {
       _cur_point.y = (_cur_point.y + 1) &gt; (GRID_SIZE - 1) ? (GRID_SIZE - 1) : _cur_point.y + 1;
       show();
-    } else if (key == KEY_UP) {
+    } else if (key == SceneKeys::kUp) {
       _cur_point.y = (_cur_point.y - 1) &lt; 0 ? 0 : _cur_point.y - 1;
       show();
-    } else if (key == KEY_ENTER) {
+    } else if (key == SceneKeys::kEnter) {
       if (isComplete()) {
         Message(I18n::Instance().Get(I18n::Key::CONGRATULATION));
-        getchar();
-        exit(0);
-      } else {
-        Message(I18n::Instance().Get(I18n::Key::NOT_COMPLETED));</span>
+        _scene_input-&gt;WaitForKey();
+        return;</span>
+<span style = "background-color:#fdd">      } else {</span>
+<span style = "background-color:#dfd">        Message(I18n::Instance().Get(I18n::Key::NOT_COMPLETED));</span>
       }
     }
-<span style = "background-color:#fdd">  }
+<span style = "background-color:#dfd">  }
 }</span>
 
 <span style = "background-color:#dfd">void CScene::generate() {

@@ -10,14 +10,13 @@
 #include "common.h"
 #include "i_scene.h"
 #include "i_scene_command.h"
+#include "key_definitions.h"
 #include "mocks/mock_puzzle_generator.h"
 #include "mocks/mock_scene_input.h"
 #include "mocks/mock_scene_renderer.h"
 #include "scene.h"
 
 namespace {
-class StopPlayLoopException {};
-
 class TestableScene : public CScene {
  public:
   using CScene::CScene;
@@ -33,6 +32,12 @@ void FillSolvedBoard(Board& board) {
       board.at(index).state = State::INITED;
     }
   }
+}
+
+void ExpectQuitWithoutSave(MockSceneInput& mock_input) {
+  EXPECT_CALL(mock_input, ReadKey()).WillOnce(::testing::Return(SceneKeys::kEsc));
+  EXPECT_CALL(mock_input, ReadToken()).WillOnce(::testing::Return("y"));
+  EXPECT_CALL(mock_input, ReadToken()).WillOnce(::testing::Return("n"));
 }
 }  // namespace
 
@@ -81,9 +86,7 @@ TEST(SceneTest, PlayQuitsWhenEscThenConfirmAndNoSave) {
 
   {
     ::testing::InSequence sequence;
-    EXPECT_CALL(mock_input, ReadKey()).WillOnce(::testing::Return(static_cast<char>(0x1B)));
-    EXPECT_CALL(mock_input, ReadToken()).WillOnce(::testing::Return("y"));
-    EXPECT_CALL(mock_input, ReadToken()).WillOnce(::testing::Return("n"));
+    ExpectQuitWithoutSave(mock_input);
   }
 
   EXPECT_NO_THROW(scene.play());
@@ -98,14 +101,133 @@ TEST(SceneTest, PlayHandlesExtendedArrowKeyPrefixAndReRenders) {
 
   {
     ::testing::InSequence sequence;
-    EXPECT_CALL(mock_input, ReadKey()).WillOnce(::testing::Return(static_cast<char>(0xE0)));
-    EXPECT_CALL(mock_input, ReadKey()).WillOnce(::testing::Return(static_cast<char>(0x4D)));
-    EXPECT_CALL(mock_input, ReadKey()).WillOnce(::testing::InvokeWithoutArgs([]() -> char {
-      throw StopPlayLoopException();
-    }));
+    EXPECT_CALL(mock_input, ReadKey()).WillOnce(::testing::Return(SceneKeys::kExtendedPrefixE0));
+    EXPECT_CALL(mock_input, ReadKey()).WillOnce(::testing::Return(SceneKeys::kRight));
+    ExpectQuitWithoutSave(mock_input);
   }
 
-  EXPECT_THROW(scene.play(), StopPlayLoopException);
+  EXPECT_NO_THROW(scene.play());
+}
+
+TEST(SceneTest, PlayReturnsOnEnterWhenBoardIsComplete) {
+  MockPuzzleGenerator mock_generator;
+  MockSceneRenderer mock_renderer;
+  MockSceneInput mock_input;
+  CScene scene(3, &mock_generator, &mock_renderer, &mock_input);
+
+  EXPECT_CALL(mock_generator, GenerateSolvedBoard(::testing::_))
+      .Times(1)
+      .WillOnce(::testing::Invoke([](Board& board) {
+        FillSolvedBoard(board);
+      }));
+
+  scene.generate();
+
+  EXPECT_CALL(mock_renderer, Render(::testing::_, ::testing::_, GRID_SIZE)).Times(1);
+  EXPECT_CALL(mock_input, ReadKey()).WillOnce(::testing::Return(SceneKeys::kEnter));
+  EXPECT_CALL(mock_input, WaitForKey()).Times(1);
+  EXPECT_CALL(mock_input, ReadToken()).Times(0);
+
+  EXPECT_NO_THROW(scene.play());
+}
+
+TEST(SceneTest, PlayUndoBranchReRendersAfterUndo) {
+  MockPuzzleGenerator mock_generator;
+  MockSceneRenderer mock_renderer;
+  MockSceneInput mock_input;
+  CScene scene(3, &mock_generator, &mock_renderer, &mock_input);
+
+  EXPECT_CALL(mock_generator, EraseCells(::testing::_, ::testing::_))
+      .Times(1)
+      .WillOnce(::testing::Invoke([](Board& board, int) {
+        board.at(0).state = State::ERASED;
+      }));
+  scene.eraseRandomGrids(1);
+
+  EXPECT_CALL(mock_renderer, Render(::testing::_, ::testing::_, GRID_SIZE)).Times(3);
+
+  {
+    ::testing::InSequence sequence;
+    EXPECT_CALL(mock_input, ReadKey()).WillOnce(::testing::Return('5'));
+    EXPECT_CALL(mock_input, ReadKey()).WillOnce(::testing::Return(SceneKeys::kUndo));
+    ExpectQuitWithoutSave(mock_input);
+  }
+
+  EXPECT_NO_THROW(scene.play());
+}
+
+TEST(SceneTest, PlayRetriesSavePathUntilSaveSucceeds) {
+  MockSceneRenderer mock_renderer;
+  MockSceneInput mock_input;
+  CScene scene(3, nullptr, &mock_renderer, &mock_input);
+
+  const auto existing_path =
+      std::filesystem::temp_directory_path() / "scene_test_play_existing_save_path.sav";
+  const auto new_path =
+      std::filesystem::temp_directory_path() / "scene_test_play_new_save_path.sav";
+
+  std::filesystem::remove(existing_path);
+  std::filesystem::remove(new_path);
+
+  {
+    std::ofstream existing_file(existing_path.string());
+    existing_file << "already exists";
+  }
+
+  EXPECT_CALL(mock_renderer, Render(::testing::_, ::testing::_, GRID_SIZE)).Times(1);
+
+  {
+    ::testing::InSequence sequence;
+    EXPECT_CALL(mock_input, ReadKey()).WillOnce(::testing::Return(SceneKeys::kEsc));
+    EXPECT_CALL(mock_input, ReadToken()).WillOnce(::testing::Return("y"));
+    EXPECT_CALL(mock_input, ReadToken()).WillOnce(::testing::Return("y"));
+    EXPECT_CALL(mock_input, ReadToken()).WillOnce(::testing::Return(existing_path.string()));
+    EXPECT_CALL(mock_input, ReadToken()).WillOnce(::testing::Return(new_path.string()));
+  }
+
+  EXPECT_NO_THROW(scene.play());
+  EXPECT_TRUE(std::filesystem::exists(new_path));
+
+  std::filesystem::remove(existing_path);
+  std::filesystem::remove(new_path);
+}
+
+TEST(SceneTest, PlayHandlesNonModifiableDigitInputAndContinuesLoop) {
+  MockSceneRenderer mock_renderer;
+  MockSceneInput mock_input;
+  CScene scene(3, nullptr, &mock_renderer, &mock_input);
+
+  EXPECT_CALL(mock_renderer, Render(::testing::_, ::testing::_, GRID_SIZE)).Times(1);
+
+  {
+    ::testing::InSequence sequence;
+    EXPECT_CALL(mock_input, ReadKey()).WillOnce(::testing::Return('5'));
+    ExpectQuitWithoutSave(mock_input);
+  }
+
+  EXPECT_NO_THROW(scene.play());
+}
+
+TEST(SceneTest, PlayCoversIncompleteEnterAndContinuePaths) {
+  MockSceneRenderer mock_renderer;
+  MockSceneInput mock_input;
+  CScene scene(3, nullptr, &mock_renderer, &mock_input);
+
+  EXPECT_CALL(mock_renderer, Render(::testing::_, ::testing::_, GRID_SIZE)).Times(4);
+
+  {
+    ::testing::InSequence sequence;
+    EXPECT_CALL(mock_input, ReadKey()).WillOnce(::testing::Return(SceneKeys::kLeft));
+    EXPECT_CALL(mock_input, ReadKey()).WillOnce(::testing::Return(SceneKeys::kDown));
+    EXPECT_CALL(mock_input, ReadKey()).WillOnce(::testing::Return(SceneKeys::kUp));
+    EXPECT_CALL(mock_input, ReadKey()).WillOnce(::testing::Return(SceneKeys::kUndo));
+    EXPECT_CALL(mock_input, ReadKey()).WillOnce(::testing::Return(SceneKeys::kEnter));
+    EXPECT_CALL(mock_input, ReadKey()).WillOnce(::testing::Return(SceneKeys::kEsc));
+    EXPECT_CALL(mock_input, ReadToken()).WillOnce(::testing::Return("n"));
+    ExpectQuitWithoutSave(mock_input);
+  }
+
+  EXPECT_NO_THROW(scene.play());
 }
 
 TEST(SceneTest, IsCompleteReturnsFalseForNewScene) {
