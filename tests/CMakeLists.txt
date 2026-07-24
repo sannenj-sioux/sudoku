@@ -5,16 +5,13 @@ include(FetchContent)
 FetchContent_Declare(
     googletest
     URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip
+    DOWNLOAD_EXTRACT_TIMESTAMP TRUE
 )
 
 # Use the parent project's runtime library settings on Windows.
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 
-FetchContent_GetProperties(googletest)
-if(NOT googletest_POPULATED)
-    FetchContent_Populate(googletest)
-    add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR} EXCLUDE_FROM_ALL)
-endif()
+FetchContent_MakeAvailable(googletest)
 
 if(MSVC)
     foreach(_gtest_target gtest gtest_main gmock gmock_main)
