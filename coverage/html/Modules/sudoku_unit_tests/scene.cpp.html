@@ -17,8 +17,7 @@
 #include &lt;fstream&gt;
 #include &lt;iostream&gt;
 
-#include "color.h"
-#include "display_symbol.h"
+#include "console_scene_renderer.h"
 #include "i18n.h"
 #include "puzzle_generator.h"
 #include "utility.inl"
@@ -33,62 +32,22 @@ constexpr char KEY_DOWN = 0x50;
 constexpr char KEY_RIGHT = 0x4D;
 
 PuzzleGenerator kDefaultPuzzleGenerator;
+ConsoleSceneRenderer kDefaultSceneRenderer;
 }  // namespace
 
-CScene::CScene(int index, IPuzzleGenerator* puzzle_generator)
+CScene::CScene(int index, IPuzzleGenerator* puzzle_generator, const ISceneRenderer* scene_renderer)
 <span style = "background-color:#dfd">    : _max_column(static_cast&lt;int&gt;(pow(index, 2))),
       _cur_point({0, 0}),
-      _puzzle_generator(puzzle_generator != nullptr ? puzzle_generator : &amp;kDefaultPuzzleGenerator) {
+      _puzzle_generator(puzzle_generator != nullptr ? puzzle_generator : &amp;kDefaultPuzzleGenerator),
+      _scene_renderer(scene_renderer != nullptr ? scene_renderer : &amp;kDefaultSceneRenderer) {
   init();
 }</span>
 
 <span style = "background-color:#dfd">CScene::~CScene() = default;</span>
 
-<span style = "background-color:#fdd">void CScene::show() const {
-  ClearScreen();</span>
-
-<span style = "background-color:#fdd">  printUnderline();</span>
-
-<span style = "background-color:#fdd">  const auto&amp; row_blocks = _board.rowBlocks();</span>
-
-  // Get the number at the cursor position (if cursor is within bounds)
-<span style = "background-color:#fdd">  int highlighted_num = UNSELECTED;
-  if (_cur_point.y &gt;= 0 &amp;&amp; _cur_point.y &lt; _max_column) {
-    const CBlock&amp; cursor_block = row_blocks.at(static_cast&lt;size_t&gt;(_cur_point.y));
-    highlighted_num = cursor_block.getNumberValue(_cur_point.x);</span>
-  }
-
-<span style = "background-color:#fdd">  for (int row = 0; row &lt; _max_column; ++row) {
-    const CBlock&amp; block = row_blocks.at(static_cast&lt;size_t&gt;(row));
-    if (_cur_point.y == row) {
-      block.print(_cur_point.x, highlighted_num);
-    } else {
-      block.print(-1, highlighted_num);</span>
-    }
-<span style = "background-color:#fdd">    printUnderline(row);
-  }
+<span style = "background-color:#dfd">void CScene::show() const {
+  _scene_renderer-&gt;Render(_board, _cur_point, _max_column);
 }</span>
-
-<span style = "background-color:#fdd">void CScene::printUnderline(int line_no) const {
-  auto is_curline = (_cur_point.y == line_no);
-  for (int column = 0; column &lt; _max_column; ++column) {
-    if ((column % BOX_SIZE) == 0 || line_no == -1 || ((line_no + 1) % BOX_SIZE) == 0) {
-      std::cout &lt;&lt; Color::Modifier(Color::BOLD, Color::BG_DEFAULT, Color::FG_RED) &lt;&lt; CORNER</span>
-                &lt;&lt; Color::Modifier();
-<span style = "background-color:#fdd">    } else {
-      std::cout &lt;&lt; CORNER;</span>
-    }
-<span style = "background-color:#fdd">    const char* third_symbol = (is_curline &amp;&amp; _cur_point.x == column) ? ARROW : LINE;
-    if (line_no == -1 || ((line_no + 1) % BOX_SIZE) == 0) {
-      std::cout &lt;&lt; Color::Modifier(Color::BOLD, Color::BG_DEFAULT, Color::FG_RED) &lt;&lt; LINE</span>
-                &lt;&lt; third_symbol &lt;&lt; LINE &lt;&lt; Color::Modifier();
-<span style = "background-color:#fdd">    } else {
-      std::cout &lt;&lt; LINE &lt;&lt; third_symbol &lt;&lt; LINE;</span>
-    }
-<span style = "background-color:#fdd">  }
-  std::cout &lt;&lt; Color::Modifier(Color::BOLD, Color::BG_DEFAULT, Color::FG_RED) &lt;&lt; CORNER</span>
-            &lt;&lt; Color::Modifier() &lt;&lt; '\n';
-<span style = "background-color:#fdd">}</span>
 
 <span style = "background-color:#dfd">void CScene::init() {
   _board.reset();

@@ -6,8 +6,7 @@
 #include <fstream>
 #include <iostream>
 
-#include "color.h"
-#include "display_symbol.h"
+#include "console_scene_renderer.h"
 #include "i18n.h"
 #include "puzzle_generator.h"
 #include "utility.inl"
@@ -22,61 +21,21 @@ constexpr char KEY_DOWN = 0x50;
 constexpr char KEY_RIGHT = 0x4D;
 
 PuzzleGenerator kDefaultPuzzleGenerator;
+ConsoleSceneRenderer kDefaultSceneRenderer;
 }  // namespace
 
-CScene::CScene(int index, IPuzzleGenerator* puzzle_generator)
+CScene::CScene(int index, IPuzzleGenerator* puzzle_generator, const ISceneRenderer* scene_renderer)
     : _max_column(static_cast<int>(pow(index, 2))),
       _cur_point({0, 0}),
-      _puzzle_generator(puzzle_generator != nullptr ? puzzle_generator : &kDefaultPuzzleGenerator) {
+      _puzzle_generator(puzzle_generator != nullptr ? puzzle_generator : &kDefaultPuzzleGenerator),
+      _scene_renderer(scene_renderer != nullptr ? scene_renderer : &kDefaultSceneRenderer) {
   init();
 }
 
 CScene::~CScene() = default;
 
 void CScene::show() const {
-  ClearScreen();
-
-  printUnderline();
-
-  const auto& row_blocks = _board.rowBlocks();
-
-  // Get the number at the cursor position (if cursor is within bounds)
-  int highlighted_num = UNSELECTED;
-  if (_cur_point.y >= 0 && _cur_point.y < _max_column) {
-    const CBlock& cursor_block = row_blocks.at(static_cast<size_t>(_cur_point.y));
-    highlighted_num = cursor_block.getNumberValue(_cur_point.x);
-  }
-
-  for (int row = 0; row < _max_column; ++row) {
-    const CBlock& block = row_blocks.at(static_cast<size_t>(row));
-    if (_cur_point.y == row) {
-      block.print(_cur_point.x, highlighted_num);
-    } else {
-      block.print(-1, highlighted_num);
-    }
-    printUnderline(row);
-  }
-}
-
-void CScene::printUnderline(int line_no) const {
-  auto is_curline = (_cur_point.y == line_no);
-  for (int column = 0; column < _max_column; ++column) {
-    if ((column % BOX_SIZE) == 0 || line_no == -1 || ((line_no + 1) % BOX_SIZE) == 0) {
-      std::cout << Color::Modifier(Color::BOLD, Color::BG_DEFAULT, Color::FG_RED) << CORNER
-                << Color::Modifier();
-    } else {
-      std::cout << CORNER;
-    }
-    const char* third_symbol = (is_curline && _cur_point.x == column) ? ARROW : LINE;
-    if (line_no == -1 || ((line_no + 1) % BOX_SIZE) == 0) {
-      std::cout << Color::Modifier(Color::BOLD, Color::BG_DEFAULT, Color::FG_RED) << LINE
-                << third_symbol << LINE << Color::Modifier();
-    } else {
-      std::cout << LINE << third_symbol << LINE;
-    }
-  }
-  std::cout << Color::Modifier(Color::BOLD, Color::BG_DEFAULT, Color::FG_RED) << CORNER
-            << Color::Modifier() << '\n';
+  _scene_renderer->Render(_board, _cur_point, _max_column);
 }
 
 void CScene::init() {

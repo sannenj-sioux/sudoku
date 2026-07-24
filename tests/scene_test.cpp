@@ -11,9 +11,17 @@
 #include "i_scene.h"
 #include "i_scene_command.h"
 #include "mocks/mock_puzzle_generator.h"
+#include "mocks/mock_scene_renderer.h"
 #include "scene.h"
 
 namespace {
+class TestableScene : public CScene {
+ public:
+  using CScene::CScene;
+
+  void ShowForTest() const { show(); }
+};
+
 void FillSolvedBoard(Board& board) {
   for (int row = 0; row < GRID_SIZE; ++row) {
     for (int col = 0; col < GRID_SIZE; ++col) {
@@ -45,6 +53,20 @@ TEST(SceneTest, EraseRandomGridsDelegatesToPuzzleGeneratorWithCount) {
   EXPECT_CALL(mock_generator, EraseCells(::testing::_, 12)).Times(1);
 
   scene->eraseRandomGrids(12);
+}
+
+TEST(SceneTest, ShowDelegatesToSceneRenderer) {
+  MockSceneRenderer mock_renderer;
+  TestableScene scene(3, nullptr, &mock_renderer);
+
+  EXPECT_CALL(mock_renderer,
+              Render(::testing::_, ::testing::Truly([](const point_t& point) {
+                       return point.x == 0 && point.y == 0;
+                     }),
+                     GRID_SIZE))
+      .Times(1);
+
+  scene.ShowForTest();
 }
 
 TEST(SceneTest, IsCompleteReturnsFalseForNewScene) {
