@@ -15,14 +15,12 @@
 #include &lt;cmath&gt;
 #include &lt;filesystem&gt;
 #include &lt;fstream&gt;
-#include &lt;iostream&gt;
 
 #include "console_scene_input.h"
 #include "console_scene_renderer.h"
 #include "i18n.h"
 #include "key_definitions.h"
 #include "puzzle_generator.h"
-#include "utility.inl"
 
 namespace {
 PuzzleGenerator kDefaultPuzzleGenerator;
@@ -185,7 +183,7 @@ CScene::CScene(int index, IPuzzleGenerator* puzzle_generator, const ISceneRender
 <span style = "background-color:#dfd">    if (key &gt;= '0' &amp;&amp; key &lt;= '9') {
       CCommand oCommand(this);
       if (!oCommand.execute(key - '0')) {
-        std::cout &lt;&lt; "this number can't be modified." &lt;&lt; '\n';
+        _scene_renderer-&gt;RenderMessage("this number can't be modified.");
       } else {
         _vCommand.push_back(std::move(oCommand));  // XXX: move without move constructor
         show();
@@ -193,17 +191,17 @@ CScene::CScene(int index, IPuzzleGenerator* puzzle_generator, const ISceneRender
       }
 <span style = "background-color:#dfd">    }
     if (key == SceneKeys::kEsc) {
-      Message(I18n::Instance().Get(I18n::Key::ASK_QUIT));
+      _scene_renderer-&gt;RenderMessage(I18n::Instance().Get(I18n::Key::ASK_QUIT));
       std::string strInput = _scene_input-&gt;ReadToken();
       if (strInput[0] == 'y' || strInput[0] == 'Y') {
-        Message(I18n::Instance().Get(I18n::Key::ASK_SAVE));
+        _scene_renderer-&gt;RenderMessage(I18n::Instance().Get(I18n::Key::ASK_SAVE));
         strInput = _scene_input-&gt;ReadToken();
         if (strInput[0] == 'y' || strInput[0] == 'Y') {</span>
           do {
-<span style = "background-color:#dfd">            Message(I18n::Instance().Get(I18n::Key::ASK_SAVE_PATH));
+<span style = "background-color:#dfd">            _scene_renderer-&gt;RenderMessage(I18n::Instance().Get(I18n::Key::ASK_SAVE_PATH));
             strInput = _scene_input-&gt;ReadToken();
             if (!save(strInput.c_str())) {
-              Message(I18n::Instance().Get(I18n::Key::FILE_EXIST_ERROR));
+              _scene_renderer-&gt;RenderMessage(I18n::Instance().Get(I18n::Key::FILE_EXIST_ERROR));
             } else {
               break;</span>
             }
@@ -211,11 +209,11 @@ CScene::CScene(int index, IPuzzleGenerator* puzzle_generator, const ISceneRender
         }
 <span style = "background-color:#dfd">        return;</span>
 <span style = "background-color:#fdd">      } else {</span>
-<span style = "background-color:#dfd">        Message(I18n::Instance().Get(I18n::Key::CONTINUE));</span>
+<span style = "background-color:#dfd">        _scene_renderer-&gt;RenderMessage(I18n::Instance().Get(I18n::Key::CONTINUE));</span>
       }
 <span style = "background-color:#dfd">    } else if (key == SceneKeys::kUndo) {
       if (_vCommand.empty()) {
-        Message(I18n::Instance().Get(I18n::Key::UNDO_ERROR));
+        _scene_renderer-&gt;RenderMessage(I18n::Instance().Get(I18n::Key::UNDO_ERROR));
       } else {
         CCommand&amp; oCommand = _vCommand.back();
         oCommand.undo();
@@ -236,11 +234,11 @@ CScene::CScene(int index, IPuzzleGenerator* puzzle_generator, const ISceneRender
       show();
     } else if (key == SceneKeys::kEnter) {
       if (isComplete()) {
-        Message(I18n::Instance().Get(I18n::Key::CONGRATULATION));
+        _scene_renderer-&gt;RenderMessage(I18n::Instance().Get(I18n::Key::CONGRATULATION));
         _scene_input-&gt;WaitForKey();
         return;</span>
 <span style = "background-color:#fdd">      } else {</span>
-<span style = "background-color:#dfd">        Message(I18n::Instance().Get(I18n::Key::NOT_COMPLETED));</span>
+<span style = "background-color:#dfd">        _scene_renderer-&gt;RenderMessage(I18n::Instance().Get(I18n::Key::NOT_COMPLETED));</span>
       }
     }
 <span style = "background-color:#dfd">  }

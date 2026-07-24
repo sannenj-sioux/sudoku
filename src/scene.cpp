@@ -4,14 +4,12 @@
 #include <cmath>
 #include <filesystem>
 #include <fstream>
-#include <iostream>
 
 #include "console_scene_input.h"
 #include "console_scene_renderer.h"
 #include "i18n.h"
 #include "key_definitions.h"
 #include "puzzle_generator.h"
-#include "utility.inl"
 
 namespace {
 PuzzleGenerator kDefaultPuzzleGenerator;
@@ -174,7 +172,7 @@ void CScene::play() {
     if (key >= '0' && key <= '9') {
       CCommand oCommand(this);
       if (!oCommand.execute(key - '0')) {
-        std::cout << "this number can't be modified." << '\n';
+        _scene_renderer->RenderMessage("this number can't be modified.");
       } else {
         _vCommand.push_back(std::move(oCommand));  // XXX: move without move constructor
         show();
@@ -182,17 +180,17 @@ void CScene::play() {
       }
     }
     if (key == SceneKeys::kEsc) {
-      Message(I18n::Instance().Get(I18n::Key::ASK_QUIT));
+      _scene_renderer->RenderMessage(I18n::Instance().Get(I18n::Key::ASK_QUIT));
       std::string strInput = _scene_input->ReadToken();
       if (strInput[0] == 'y' || strInput[0] == 'Y') {
-        Message(I18n::Instance().Get(I18n::Key::ASK_SAVE));
+        _scene_renderer->RenderMessage(I18n::Instance().Get(I18n::Key::ASK_SAVE));
         strInput = _scene_input->ReadToken();
         if (strInput[0] == 'y' || strInput[0] == 'Y') {
           do {
-            Message(I18n::Instance().Get(I18n::Key::ASK_SAVE_PATH));
+            _scene_renderer->RenderMessage(I18n::Instance().Get(I18n::Key::ASK_SAVE_PATH));
             strInput = _scene_input->ReadToken();
             if (!save(strInput.c_str())) {
-              Message(I18n::Instance().Get(I18n::Key::FILE_EXIST_ERROR));
+              _scene_renderer->RenderMessage(I18n::Instance().Get(I18n::Key::FILE_EXIST_ERROR));
             } else {
               break;
             }
@@ -200,11 +198,11 @@ void CScene::play() {
         }
         return;
       } else {
-        Message(I18n::Instance().Get(I18n::Key::CONTINUE));
+        _scene_renderer->RenderMessage(I18n::Instance().Get(I18n::Key::CONTINUE));
       }
     } else if (key == SceneKeys::kUndo) {
       if (_vCommand.empty()) {
-        Message(I18n::Instance().Get(I18n::Key::UNDO_ERROR));
+        _scene_renderer->RenderMessage(I18n::Instance().Get(I18n::Key::UNDO_ERROR));
       } else {
         CCommand& oCommand = _vCommand.back();
         oCommand.undo();
@@ -225,11 +223,11 @@ void CScene::play() {
       show();
     } else if (key == SceneKeys::kEnter) {
       if (isComplete()) {
-        Message(I18n::Instance().Get(I18n::Key::CONGRATULATION));
+        _scene_renderer->RenderMessage(I18n::Instance().Get(I18n::Key::CONGRATULATION));
         _scene_input->WaitForKey();
         return;
       } else {
-        Message(I18n::Instance().Get(I18n::Key::NOT_COMPLETED));
+        _scene_renderer->RenderMessage(I18n::Instance().Get(I18n::Key::NOT_COMPLETED));
       }
     }
   }

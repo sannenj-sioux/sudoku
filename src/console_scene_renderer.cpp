@@ -53,3 +53,10 @@ void ConsoleSceneRenderer::Render(const Board& board, const point_t& cursor_poin
     PrintUnderline(cursor_point, max_column, row);
   }
 }
+
+void ConsoleSceneRenderer::RenderMessage(const std::string& message, bool add_line_feed) const {
+  std::cout << message;
+  if (add_line_feed) {
+    std::cout << '\n';
+  }
+}

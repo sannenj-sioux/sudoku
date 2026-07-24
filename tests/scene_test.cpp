@@ -39,6 +39,15 @@ void ExpectQuitWithoutSave(MockSceneInput& mock_input) {
   EXPECT_CALL(mock_input, ReadToken()).WillOnce(::testing::Return("y"));
   EXPECT_CALL(mock_input, ReadToken()).WillOnce(::testing::Return("n"));
 }
+
+void ExpectRenderAt(MockSceneRenderer& mock_renderer, int x, int y) {
+  EXPECT_CALL(mock_renderer,
+              Render(::testing::_,
+                     ::testing::Truly([x, y](const point_t& point) {
+                       return point.x == x && point.y == y;
+                     }),
+                     GRID_SIZE));
+}
 }  // namespace
 
 TEST(SceneTest, GenerateDelegatesToPuzzleGenerator) {
@@ -67,12 +76,7 @@ TEST(SceneTest, ShowDelegatesToSceneRenderer) {
   MockSceneRenderer mock_renderer;
   TestableScene scene(3, nullptr, &mock_renderer);
 
-  EXPECT_CALL(mock_renderer,
-              Render(::testing::_, ::testing::Truly([](const point_t& point) {
-                       return point.x == 0 && point.y == 0;
-                     }),
-                     GRID_SIZE))
-      .Times(1);
+  ExpectRenderAt(mock_renderer, 0, 0);
 
   scene.ShowForTest();
 }
@@ -82,7 +86,7 @@ TEST(SceneTest, PlayQuitsWhenEscThenConfirmAndNoSave) {
   MockSceneInput mock_input;
   CScene scene(3, nullptr, &mock_renderer, &mock_input);
 
-  EXPECT_CALL(mock_renderer, Render(::testing::_, ::testing::_, GRID_SIZE)).Times(1);
+  ExpectRenderAt(mock_renderer, 0, 0);
 
   {
     ::testing::InSequence sequence;
@@ -97,12 +101,167 @@ TEST(SceneTest, PlayHandlesExtendedArrowKeyPrefixAndReRenders) {
   MockSceneInput mock_input;
   CScene scene(3, nullptr, &mock_renderer, &mock_input);
 
-  EXPECT_CALL(mock_renderer, Render(::testing::_, ::testing::_, GRID_SIZE)).Times(2);
+  {
+    ::testing::InSequence render_sequence;
+    ExpectRenderAt(mock_renderer, 0, 0);
+    ExpectRenderAt(mock_renderer, 1, 0);
+  }
 
   {
     ::testing::InSequence sequence;
     EXPECT_CALL(mock_input, ReadKey()).WillOnce(::testing::Return(SceneKeys::kExtendedPrefixE0));
     EXPECT_CALL(mock_input, ReadKey()).WillOnce(::testing::Return(SceneKeys::kRight));
+    ExpectQuitWithoutSave(mock_input);
+  }
+
+  EXPECT_NO_THROW(scene.play());
+}
+
+TEST(SceneTest, PlayTopLeftBoundaryClamp) {
+  MockSceneRenderer mock_renderer;
+  MockSceneInput mock_input;
+  CScene scene(3, nullptr, &mock_renderer, &mock_input);
+
+  {
+    ::testing::InSequence render_sequence;
+    ExpectRenderAt(mock_renderer, 0, 0);
+    ExpectRenderAt(mock_renderer, 0, 0);
+    ExpectRenderAt(mock_renderer, 0, 0);
+  }
+
+  {
+    ::testing::InSequence sequence;
+    EXPECT_CALL(mock_input, ReadKey()).WillOnce(::testing::Return(SceneKeys::kLeft));
+    EXPECT_CALL(mock_input, ReadKey()).WillOnce(::testing::Return(SceneKeys::kUp));
+    ExpectQuitWithoutSave(mock_input);
+  }
+
+  EXPECT_NO_THROW(scene.play());
+  const auto cursor = scene.getCurPoint();
+  EXPECT_EQ(cursor.x, 0);
+  EXPECT_EQ(cursor.y, 0);
+}
+
+TEST(SceneTest, PlayTopRightBoundaryClamp) {
+  MockSceneRenderer mock_renderer;
+  MockSceneInput mock_input;
+  CScene scene(3, nullptr, &mock_renderer, &mock_input);
+
+  constexpr int kBoundaryPushCount = GRID_SIZE + 2;
+  {
+    ::testing::InSequence render_sequence;
+    ExpectRenderAt(mock_renderer, 0, 0);
+    for (int i = 0; i < kBoundaryPushCount; ++i) {
+      const int expected_x = (i + 1) > (GRID_SIZE - 1) ? (GRID_SIZE - 1) : (i + 1);
+      ExpectRenderAt(mock_renderer, expected_x, 0);
+    }
+  }
+
+  {
+    ::testing::InSequence sequence;
+    for (int i = 0; i < kBoundaryPushCount; ++i) {
+      EXPECT_CALL(mock_input, ReadKey()).WillOnce(::testing::Return(SceneKeys::kRight));
+    }
+    ExpectQuitWithoutSave(mock_input);
+  }
+
+  EXPECT_NO_THROW(scene.play());
+  const auto cursor = scene.getCurPoint();
+  EXPECT_EQ(cursor.x, GRID_SIZE - 1);
+  EXPECT_EQ(cursor.y, 0);
+}
+
+TEST(SceneTest, PlayBottomRightBoundaryClamp) {
+  MockSceneRenderer mock_renderer;
+  MockSceneInput mock_input;
+  CScene scene(3, nullptr, &mock_renderer, &mock_input);
+
+  constexpr int kBoundaryPushCount = GRID_SIZE + 2;
+  {
+    ::testing::InSequence render_sequence;
+    ExpectRenderAt(mock_renderer, 0, 0);
+    for (int i = 0; i < kBoundaryPushCount; ++i) {
+      const int expected_x = (i + 1) > (GRID_SIZE - 1) ? (GRID_SIZE - 1) : (i + 1);
+      ExpectRenderAt(mock_renderer, expected_x, 0);
+    }
+    for (int i = 0; i < kBoundaryPushCount; ++i) {
+      const int expected_y = (i + 1) > (GRID_SIZE - 1) ? (GRID_SIZE - 1) : (i + 1);
+      ExpectRenderAt(mock_renderer, GRID_SIZE - 1, expected_y);
+    }
+  }
+
+  {
+    ::testing::InSequence sequence;
+    for (int i = 0; i < kBoundaryPushCount; ++i) {
+      EXPECT_CALL(mock_input, ReadKey()).WillOnce(::testing::Return(SceneKeys::kRight));
+    }
+    for (int i = 0; i < kBoundaryPushCount; ++i) {
+      EXPECT_CALL(mock_input, ReadKey()).WillOnce(::testing::Return(SceneKeys::kDown));
+    }
+    ExpectQuitWithoutSave(mock_input);
+  }
+
+  EXPECT_NO_THROW(scene.play());
+  const auto cursor = scene.getCurPoint();
+  EXPECT_EQ(cursor.x, GRID_SIZE - 1);
+  EXPECT_EQ(cursor.y, GRID_SIZE - 1);
+}
+
+TEST(SceneTest, PlayBottomLeftBoundaryClamp) {
+  MockSceneRenderer mock_renderer;
+  MockSceneInput mock_input;
+  CScene scene(3, nullptr, &mock_renderer, &mock_input);
+
+  constexpr int kBoundaryPushCount = GRID_SIZE + 2;
+  {
+    ::testing::InSequence render_sequence;
+    ExpectRenderAt(mock_renderer, 0, 0);
+    for (int i = 0; i < kBoundaryPushCount; ++i) {
+      const int expected_y = (i + 1) > (GRID_SIZE - 1) ? (GRID_SIZE - 1) : (i + 1);
+      ExpectRenderAt(mock_renderer, 0, expected_y);
+    }
+    for (int i = 0; i < kBoundaryPushCount; ++i) {
+      ExpectRenderAt(mock_renderer, 0, GRID_SIZE - 1);
+    }
+  }
+
+  {
+    ::testing::InSequence sequence;
+    for (int i = 0; i < kBoundaryPushCount; ++i) {
+      EXPECT_CALL(mock_input, ReadKey()).WillOnce(::testing::Return(SceneKeys::kDown));
+    }
+    for (int i = 0; i < kBoundaryPushCount; ++i) {
+      EXPECT_CALL(mock_input, ReadKey()).WillOnce(::testing::Return(SceneKeys::kLeft));
+    }
+    ExpectQuitWithoutSave(mock_input);
+  }
+
+  EXPECT_NO_THROW(scene.play());
+  const auto cursor = scene.getCurPoint();
+  EXPECT_EQ(cursor.x, 0);
+  EXPECT_EQ(cursor.y, GRID_SIZE - 1);
+}
+
+TEST(SceneTest, PlayValidMovesInAllDirectionsChangeCursor) {
+  MockSceneRenderer mock_renderer;
+  MockSceneInput mock_input;
+  CScene scene(3, nullptr, &mock_renderer, &mock_input);
+
+  {
+    ::testing::InSequence render_sequence;
+    ExpectRenderAt(mock_renderer, 0, 0);
+    ExpectRenderAt(mock_renderer, 1, 0);
+    ExpectRenderAt(mock_renderer, 1, 1);
+    ExpectRenderAt(mock_renderer, 0, 1);
+    ExpectRenderAt(mock_renderer, 0, 0);
+  }
+
+  {
+    ::testing::InSequence sequence;
+    EXPECT_CALL(mock_input, ReadKey()).WillOnce(::testing::Return(SceneKeys::kRight));
+    EXPECT_CALL(mock_input, ReadKey()).WillOnce(::testing::Return(SceneKeys::kDown));
+    EXPECT_CALL(mock_input, ReadKey()).WillOnce(::testing::Return(SceneKeys::kLeft));
+    EXPECT_CALL(mock_input, ReadKey()).WillOnce(::testing::Return(SceneKeys::kUp));
     ExpectQuitWithoutSave(mock_input);
   }
 
@@ -123,7 +282,7 @@ TEST(SceneTest, PlayReturnsOnEnterWhenBoardIsComplete) {
 
   scene.generate();
 
-  EXPECT_CALL(mock_renderer, Render(::testing::_, ::testing::_, GRID_SIZE)).Times(1);
+  ExpectRenderAt(mock_renderer, 0, 0);
   EXPECT_CALL(mock_input, ReadKey()).WillOnce(::testing::Return(SceneKeys::kEnter));
   EXPECT_CALL(mock_input, WaitForKey()).Times(1);
   EXPECT_CALL(mock_input, ReadToken()).Times(0);
@@ -144,7 +303,12 @@ TEST(SceneTest, PlayUndoBranchReRendersAfterUndo) {
       }));
   scene.eraseRandomGrids(1);
 
-  EXPECT_CALL(mock_renderer, Render(::testing::_, ::testing::_, GRID_SIZE)).Times(3);
+  {
+    ::testing::InSequence render_sequence;
+    ExpectRenderAt(mock_renderer, 0, 0);
+    ExpectRenderAt(mock_renderer, 0, 0);
+    ExpectRenderAt(mock_renderer, 0, 0);
+  }
 
   {
     ::testing::InSequence sequence;
@@ -174,7 +338,7 @@ TEST(SceneTest, PlayRetriesSavePathUntilSaveSucceeds) {
     existing_file << "already exists";
   }
 
-  EXPECT_CALL(mock_renderer, Render(::testing::_, ::testing::_, GRID_SIZE)).Times(1);
+  ExpectRenderAt(mock_renderer, 0, 0);
 
   {
     ::testing::InSequence sequence;
@@ -197,7 +361,7 @@ TEST(SceneTest, PlayHandlesNonModifiableDigitInputAndContinuesLoop) {
   MockSceneInput mock_input;
   CScene scene(3, nullptr, &mock_renderer, &mock_input);
 
-  EXPECT_CALL(mock_renderer, Render(::testing::_, ::testing::_, GRID_SIZE)).Times(1);
+  ExpectRenderAt(mock_renderer, 0, 0);
 
   {
     ::testing::InSequence sequence;
@@ -213,7 +377,13 @@ TEST(SceneTest, PlayCoversIncompleteEnterAndContinuePaths) {
   MockSceneInput mock_input;
   CScene scene(3, nullptr, &mock_renderer, &mock_input);
 
-  EXPECT_CALL(mock_renderer, Render(::testing::_, ::testing::_, GRID_SIZE)).Times(4);
+  {
+    ::testing::InSequence render_sequence;
+    ExpectRenderAt(mock_renderer, 0, 0);
+    ExpectRenderAt(mock_renderer, 0, 0);
+    ExpectRenderAt(mock_renderer, 0, 1);
+    ExpectRenderAt(mock_renderer, 0, 0);
+  }
 
   {
     ::testing::InSequence sequence;
