@@ -69,6 +69,14 @@
       "problemMatcher": []
     },
     {
+      "label": "GTest: stress test (Debug, shuffled x100)",
+      "type": "shell",
+      "command": ".\\bin\\Debug\\sudoku_unit_tests.exe --gtest_shuffle --gtest_repeat=100 --gtest_color=yes",
+      "group": "test",
+      "dependsOn": "CMake: configure & build",
+      "problemMatcher": []
+    },
+    {
       "label": "CMake: generate UML",
       "type": "shell",
       "command": "cmake --build build --config Release --target generate_uml",
