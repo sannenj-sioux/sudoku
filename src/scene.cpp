@@ -53,6 +53,7 @@ bool CScene::setCurValue(int nCurValue, int& nLastValue) {
 void CScene::setValue(const point_t& point, int value) {
   const auto index = static_cast<size_t>(point.x) + (static_cast<size_t>(point.y) * GRID_SIZE);
   _board.at(index).value = value;
+  _board.refreshValidationState();
 }
 
 void CScene::setValue(int value) {
@@ -62,9 +63,16 @@ void CScene::setValue(int value) {
 
 void CScene::eraseRandomGrids(int count) {
   _puzzle_generator->EraseCells(_board, count);
+  _board.refreshValidationState();
 }
 
 bool CScene::isComplete() {
+  _board.refreshValidationState();
+
+  if (!_board.isValidState()) {
+    return false;
+  }
+
   const auto& row_blocks = _board.rowBlocks();
   const auto& column_blocks = _board.columnBlocks();
   const auto& box_blocks = _board.boxBlocks();
@@ -154,6 +162,7 @@ bool CScene::load(const char* filename) {
     file_stream >> point.x >> point.y >> preValue >> curValue;
     _vCommand.emplace_back(this, point, preValue, curValue);
   }
+  _board.refreshValidationState();
   return true;
 }
 
@@ -235,6 +244,7 @@ void CScene::play() {
 
 void CScene::generate() {
   _puzzle_generator->GenerateSolvedBoard(_board);
+  _board.refreshValidationState();
 
   assert(isComplete());
 }

@@ -12,6 +12,27 @@ enum class State : int {
   ERASED,
 };
 
+enum class ConstraintViolation : unsigned char {
+  NONE = 0,
+  ROW = 1,
+  COLUMN = 2,
+  BOX = 4,
+};
+
+inline ConstraintViolation operator|(ConstraintViolation lhs, ConstraintViolation rhs) {
+  return static_cast<ConstraintViolation>(static_cast<unsigned char>(lhs) |
+                                          static_cast<unsigned char>(rhs));
+}
+
+inline ConstraintViolation& operator|=(ConstraintViolation& lhs, ConstraintViolation rhs) {
+  lhs = lhs | rhs;
+  return lhs;
+}
+
+inline bool HasViolation(ConstraintViolation mask, ConstraintViolation flag) {
+  return (static_cast<unsigned char>(mask) & static_cast<unsigned char>(flag)) != 0U;
+}
+
 struct point_t {
   int x;
   int y;
@@ -20,6 +41,7 @@ struct point_t {
 struct point_value_t {
   int value;
   State state;
+  ConstraintViolation violation;
 };
 
 class CPointSort {

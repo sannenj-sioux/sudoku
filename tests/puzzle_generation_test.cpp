@@ -77,6 +77,12 @@ int CountErasedCells(const Board& board) {
   return erased_count;
 }
 
+void SetEditableCell(Board& board, int row, int column, int value) {
+  point_value_t& cell = AccessCell(board, row, column);
+  cell.value = value;
+  cell.state = State::ERASED;
+}
+
 bool IsSolved(const Board& board) {
   if (CountEmptyCells(board) > 0) {
     return false;
@@ -226,4 +232,80 @@ TEST(PuzzleGeneratorTest, GenerateCanBeRepeatedForEachDifficulty) {
     EXPECT_EQ(CountErasedCells(board), erase_count);
     EXPECT_FALSE(IsSolved(board));
   }
+}
+
+TEST(PuzzleGeneratorTest, BoardValidationStateTracksRowConstraintViolation) {
+  // Given
+  Board board;
+  board.reset();
+  SetEditableCell(board, 0, 0, 1);
+  SetEditableCell(board, 0, 4, 1);
+
+  // When
+  board.refreshValidationState();
+
+  // Then
+  EXPECT_FALSE(board.isValidState());
+  EXPECT_STREQ(board.validationState().Name(), "BoardInvalidRowState");
+  EXPECT_TRUE(HasViolation(ReadCell(board, 0, 0).violation, ConstraintViolation::ROW));
+  EXPECT_TRUE(HasViolation(ReadCell(board, 0, 4).violation, ConstraintViolation::ROW));
+  EXPECT_FALSE(HasViolation(ReadCell(board, 0, 0).violation, ConstraintViolation::COLUMN));
+  EXPECT_FALSE(HasViolation(ReadCell(board, 0, 0).violation, ConstraintViolation::BOX));
+}
+
+TEST(PuzzleGeneratorTest, BoardValidationStateTracksColumnConstraintViolation) {
+  // Given
+  Board board;
+  board.reset();
+  SetEditableCell(board, 0, 0, 2);
+  SetEditableCell(board, 4, 0, 2);
+
+  // When
+  board.refreshValidationState();
+
+  // Then
+  EXPECT_FALSE(board.isValidState());
+  EXPECT_STREQ(board.validationState().Name(), "BoardInvalidColumnState");
+  EXPECT_TRUE(HasViolation(ReadCell(board, 0, 0).violation, ConstraintViolation::COLUMN));
+  EXPECT_TRUE(HasViolation(ReadCell(board, 4, 0).violation, ConstraintViolation::COLUMN));
+  EXPECT_FALSE(HasViolation(ReadCell(board, 0, 0).violation, ConstraintViolation::ROW));
+  EXPECT_FALSE(HasViolation(ReadCell(board, 0, 0).violation, ConstraintViolation::BOX));
+}
+
+TEST(PuzzleGeneratorTest, BoardValidationStateTracksBoxConstraintViolation) {
+  // Given
+  Board board;
+  board.reset();
+  SetEditableCell(board, 0, 0, 3);
+  SetEditableCell(board, 1, 1, 3);
+
+  // When
+  board.refreshValidationState();
+
+  // Then
+  EXPECT_FALSE(board.isValidState());
+  EXPECT_STREQ(board.validationState().Name(), "BoardInvalidBoxState");
+  EXPECT_TRUE(HasViolation(ReadCell(board, 0, 0).violation, ConstraintViolation::BOX));
+  EXPECT_TRUE(HasViolation(ReadCell(board, 1, 1).violation, ConstraintViolation::BOX));
+  EXPECT_FALSE(HasViolation(ReadCell(board, 0, 0).violation, ConstraintViolation::ROW));
+  EXPECT_FALSE(HasViolation(ReadCell(board, 0, 0).violation, ConstraintViolation::COLUMN));
+}
+
+TEST(PuzzleGeneratorTest, BoardValidationStateTracksMultipleConstraintViolations) {
+  // Given
+  Board board;
+  board.reset();
+  SetEditableCell(board, 0, 0, 4);
+  SetEditableCell(board, 0, 1, 4);
+  SetEditableCell(board, 1, 0, 4);
+
+  // When
+  board.refreshValidationState();
+
+  // Then
+  EXPECT_FALSE(board.isValidState());
+  EXPECT_STREQ(board.validationState().Name(), "BoardInvalidMixedState");
+  EXPECT_TRUE(HasViolation(ReadCell(board, 0, 0).violation, ConstraintViolation::ROW));
+  EXPECT_TRUE(HasViolation(ReadCell(board, 0, 0).violation, ConstraintViolation::COLUMN));
+  EXPECT_TRUE(HasViolation(ReadCell(board, 0, 0).violation, ConstraintViolation::BOX));
 }

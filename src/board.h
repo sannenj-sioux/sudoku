@@ -2,8 +2,10 @@
 
 #include <array>
 #include <cstddef>
+#include <memory>
 
 #include "block.h"
+#include "board_validation_state.h"
 #include "common.h"
 
 class Board {
@@ -25,6 +27,11 @@ class Board {
   const std::array<CBlock, GRID_SIZE>& columnBlocks() const;
   const std::array<std::array<CBlock, BOX_SIZE>, BOX_SIZE>& boxBlocks() const;
 
+  void refreshValidationState();
+  bool isValidState() const;
+  ConstraintViolation violationSummary() const;
+  const BoardValidationState& validationState() const;
+
  private:
   void rebuildBlocks();
 
@@ -32,4 +39,6 @@ class Board {
   std::array<CBlock, GRID_SIZE> row_blocks_;
   std::array<CBlock, GRID_SIZE> column_blocks_;
   std::array<std::array<CBlock, BOX_SIZE>, BOX_SIZE> box_blocks_;
+  ConstraintViolation violation_summary_;
+  std::unique_ptr<BoardValidationState> validation_state_;
 };

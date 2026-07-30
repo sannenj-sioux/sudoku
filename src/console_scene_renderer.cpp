@@ -52,6 +52,23 @@ void ConsoleSceneRenderer::Render(const Board& board, const point_t& cursor_poin
     }
     PrintUnderline(cursor_point, max_column, row);
   }
+
+  if (board.isValidState()) {
+    std::cout << Color::Modifier(Color::BOLD, Color::BG_DEFAULT, Color::FG_LIGHT_GREEN)
+              << "Board status: " << board.validationState().Message() << Color::Modifier() << '\n';
+  } else {
+    std::cout << Color::Modifier(Color::BOLD, Color::BG_DEFAULT, Color::FG_LIGHT_RED)
+              << "Board status: " << board.validationState().Message() << Color::Modifier() << '\n';
+    std::cout << "Violation colors -> "
+              << Color::Modifier(Color::BOLD, Color::BG_DEFAULT, Color::FG_LIGHT_RED) << "row"
+              << Color::Modifier() << ", "
+              << Color::Modifier(Color::BOLD, Color::BG_DEFAULT, Color::FG_LIGHT_CYAN) << "column"
+              << Color::Modifier() << ", "
+              << Color::Modifier(Color::BOLD, Color::BG_DEFAULT, Color::FG_LIGHT_MAGENTA) << "box"
+              << Color::Modifier() << ", "
+              << Color::Modifier(Color::BOLD, Color::BG_RED, Color::FG_WHITE) << "multiple"
+              << Color::Modifier() << '\n';
+  }
 }
 
 void ConsoleSceneRenderer::RenderMessage(const std::string& message, bool add_line_feed) const {

@@ -8,6 +8,29 @@
 #include "common.h"
 #include "display_symbol.h"
 
+namespace {
+Color::Code ResolveViolationColor(ConstraintViolation violation) {
+  const bool row = HasViolation(violation, ConstraintViolation::ROW);
+  const bool column = HasViolation(violation, ConstraintViolation::COLUMN);
+  const bool box = HasViolation(violation, ConstraintViolation::BOX);
+  const int active_count = static_cast<int>(row) + static_cast<int>(column) + static_cast<int>(box);
+
+  if (active_count > 1) {
+    return Color::FG_WHITE;
+  }
+  if (row) {
+    return Color::FG_LIGHT_RED;
+  }
+  if (column) {
+    return Color::FG_LIGHT_CYAN;
+  }
+  if (box) {
+    return Color::FG_LIGHT_MAGENTA;
+  }
+  return Color::FG_DEFAULT;
+}
+}  // namespace
+
 CBlock::CBlock() : _count(0) {}
 
 bool CBlock::isValid() const {
@@ -67,6 +90,24 @@ void CBlock::print(int cur_point, int highlighted_num) const {
       num_fgcolor = Color::FG_GREEN;
     } else {
       num_fgcolor = Color::FG_DEFAULT;
+    }
+
+    if (number.state == State::ERASED && number.violation != ConstraintViolation::NONE) {
+      num_fgcolor = ResolveViolationColor(number.violation);
+      int active_violation_count = 0;
+      if (HasViolation(number.violation, ConstraintViolation::ROW)) {
+        ++active_violation_count;
+      }
+      if (HasViolation(number.violation, ConstraintViolation::COLUMN)) {
+        ++active_violation_count;
+      }
+      if (HasViolation(number.violation, ConstraintViolation::BOX)) {
+        ++active_violation_count;
+      }
+      const bool is_multi_violation = active_violation_count > 1;
+      if (is_multi_violation && num_bgcolor == Color::BG_DEFAULT) {
+        num_bgcolor = Color::BG_RED;
+      }
     }
 
     if (number.value != 0) {

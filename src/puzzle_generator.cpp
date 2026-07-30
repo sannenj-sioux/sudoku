@@ -121,7 +121,7 @@ void PuzzleGenerator::EraseCells(Board& board, int count) {
     const auto random_index =
         static_cast<std::size_t>(RandomInt(0, static_cast<int>(cell_indexes.size() - 1)));
     board.at(static_cast<std::size_t>(cell_indexes.at(random_index))) =
-        {static_cast<int>(UNSELECTED), State::ERASED};
+      {static_cast<int>(UNSELECTED), State::ERASED, ConstraintViolation::NONE};
     cell_indexes.erase(cell_indexes.begin() +
                        static_cast<std::vector<int>::difference_type>(random_index));
   }
