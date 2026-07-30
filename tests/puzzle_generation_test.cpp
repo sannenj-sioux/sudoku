@@ -120,18 +120,26 @@ bool IsSolved(const Board& board) {
 }  // namespace
 
 TEST(PuzzleGeneratorTest, GenerateSolvedBoardProducesCompleteSudoku) {
+  // Given
   PuzzleGenerator generator;
   Board board;
+
+  // When
   generator.GenerateSolvedBoard(board);
 
+  // Then
   EXPECT_TRUE(IsSolved(board));
 }
 
 TEST(PuzzleGeneratorTest, SolvedBoardUsesEachDigitInEveryRowColumnAndBox) {
+  // Given
   PuzzleGenerator generator;
   Board board;
+
+  // When
   generator.GenerateSolvedBoard(board);
 
+  // Then
   for (int row = 0; row < GRID_SIZE; ++row) {
     const CBlock row_block = BuildRowBlock(board, row);
     EXPECT_TRUE(row_block.isValid());
@@ -154,10 +162,14 @@ TEST(PuzzleGeneratorTest, SolvedBoardUsesEachDigitInEveryRowColumnAndBox) {
 }
 
 TEST(PuzzleGeneratorTest, SolvedBoardStartsFilledAndInitialized) {
+  // Given
   PuzzleGenerator generator;
   Board board;
+
+  // When
   generator.GenerateSolvedBoard(board);
 
+  // Then
   for (int row = 0; row < GRID_SIZE; ++row) {
     for (int column = 0; column < GRID_SIZE; ++column) {
       const point_value_t cell = ReadCell(board, row, column);
@@ -168,11 +180,15 @@ TEST(PuzzleGeneratorTest, SolvedBoardStartsFilledAndInitialized) {
 }
 
 TEST(PuzzleGeneratorTest, EraseCellsMarksRequestedNumberOfCellsAsErased) {
+  // Given
   PuzzleGenerator generator;
   Board board;
   generator.GenerateSolvedBoard(board);
+
+  // When
   generator.EraseCells(board, 20);
 
+  // Then
   for (int row = 0; row < GRID_SIZE; ++row) {
     for (int column = 0; column < GRID_SIZE; ++column) {
       const point_value_t cell = ReadCell(board, row, column);
@@ -188,19 +204,24 @@ TEST(PuzzleGeneratorTest, EraseCellsMarksRequestedNumberOfCellsAsErased) {
 }
 
 TEST(PuzzleGeneratorTest, GenerateCanBeRepeatedForEachDifficulty) {
+  // Given
   PuzzleGenerator generator;
   Board board;
 
   constexpr std::array<int, 3> kEraseCounts = {20, 35, 50};
   for (int erase_count : kEraseCounts) {
+    // When
     generator.GenerateSolvedBoard(board);
 
+    // Then
     EXPECT_TRUE(IsSolved(board));
     EXPECT_EQ(CountEmptyCells(board), 0);
     EXPECT_EQ(CountErasedCells(board), 0);
 
+    // When
     generator.EraseCells(board, erase_count);
 
+    // Then
     EXPECT_EQ(CountEmptyCells(board), erase_count);
     EXPECT_EQ(CountErasedCells(board), erase_count);
     EXPECT_FALSE(IsSolved(board));
