@@ -17,10 +17,10 @@ std::size_t ToIndex(int row, int column) {
          static_cast<std::size_t>(column);
 }
 
-void SetCell(Board& board, int row, int column, int value, State state) {
+void SetCell(Board& board, int row, int column, int value, bool is_given) {
   point_value_t& cell = board.at(ToIndex(row, column));
   cell.value = value;
-  cell.state = state;
+  cell.is_given = is_given;
 }
 
 }  // namespace
@@ -106,7 +106,7 @@ void PuzzleGenerator::GenerateSolvedBoard(Board& board) {
   board.reset();
   for (int row = 0; row < GRID_SIZE; ++row) {
     for (int column = 0; column < GRID_SIZE; ++column) {
-      SetCell(board, row, column, matrix[row][column], State::INITED);
+      SetCell(board, row, column, matrix[row][column], true);
     }
   }
 }
@@ -121,7 +121,7 @@ void PuzzleGenerator::EraseCells(Board& board, int count) {
     const auto random_index =
         static_cast<std::size_t>(RandomInt(0, static_cast<int>(cell_indexes.size() - 1)));
     board.at(static_cast<std::size_t>(cell_indexes.at(random_index))) =
-      {static_cast<int>(UNSELECTED), State::ERASED, ConstraintViolation::NONE};
+      {static_cast<int>(UNSELECTED), false, ConstraintViolation::NONE};
     cell_indexes.erase(cell_indexes.begin() +
                        static_cast<std::vector<int>::difference_type>(random_index));
   }

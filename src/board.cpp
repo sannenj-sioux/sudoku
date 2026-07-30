@@ -4,10 +4,87 @@
 #include <utility>
 
 namespace {
-constexpr int kUntrackedValue = -1;
-
 void MarkCellViolation(point_value_t& cell, ConstraintViolation violation) {
   cell.violation |= violation;
+}
+
+bool IsFilledCellForValidation(const point_value_t& cell) {
+  return cell.value >= 1 && cell.value <= GRID_SIZE;
+}
+
+int RowOf(std::size_t index) {
+  return static_cast<int>(index / static_cast<std::size_t>(GRID_SIZE));
+}
+
+int ColumnOf(std::size_t index) {
+  return static_cast<int>(index % static_cast<std::size_t>(GRID_SIZE));
+}
+
+bool HasRowDuplicate(const std::array<point_value_t, CELL_COUNT>& cells,
+                     std::size_t index,
+                     int value) {
+  const int row = RowOf(index);
+  for (int column = 0; column < GRID_SIZE; ++column) {
+    const auto candidate_index =
+        (static_cast<std::size_t>(row) * static_cast<std::size_t>(GRID_SIZE)) +
+        static_cast<std::size_t>(column);
+    if (candidate_index == index) {
+      continue;
+    }
+
+    const point_value_t& candidate = cells.at(candidate_index);
+    if (IsFilledCellForValidation(candidate) && candidate.value == value) {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool HasColumnDuplicate(const std::array<point_value_t, CELL_COUNT>& cells,
+                        std::size_t index,
+                        int value) {
+  const int column = ColumnOf(index);
+  for (int row = 0; row < GRID_SIZE; ++row) {
+    const auto candidate_index =
+        (static_cast<std::size_t>(row) * static_cast<std::size_t>(GRID_SIZE)) +
+        static_cast<std::size_t>(column);
+    if (candidate_index == index) {
+      continue;
+    }
+
+    const point_value_t& candidate = cells.at(candidate_index);
+    if (IsFilledCellForValidation(candidate) && candidate.value == value) {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool HasBoxDuplicate(const std::array<point_value_t, CELL_COUNT>& cells,
+                     std::size_t index,
+                     int value) {
+  const int row = RowOf(index);
+  const int column = ColumnOf(index);
+  const int start_row = (row / BOX_SIZE) * BOX_SIZE;
+  const int start_column = (column / BOX_SIZE) * BOX_SIZE;
+
+  for (int box_row = start_row; box_row < start_row + BOX_SIZE; ++box_row) {
+    for (int box_column = start_column; box_column < start_column + BOX_SIZE; ++box_column) {
+      const auto candidate_index =
+          (static_cast<std::size_t>(box_row) * static_cast<std::size_t>(GRID_SIZE)) +
+          static_cast<std::size_t>(box_column);
+      if (candidate_index == index) {
+        continue;
+      }
+
+      const point_value_t& candidate = cells.at(candidate_index);
+      if (IsFilledCellForValidation(candidate) && candidate.value == value) {
+        return true;
+      }
+    }
+  }
+
+  return false;
 }
 }  // namespace
 
@@ -44,7 +121,7 @@ Board& Board::operator=(Board&& other) noexcept {
 }
 
 void Board::reset() {
-  cells_.fill({static_cast<int>(UNSELECTED), State::INITED, ConstraintViolation::NONE});
+  cells_.fill({static_cast<int>(UNSELECTED), true, ConstraintViolation::NONE});
   rebuildBlocks();
   refreshValidationState();
 }
@@ -73,94 +150,63 @@ const std::array<std::array<CBlock, BOX_SIZE>, BOX_SIZE>& Board::boxBlocks() con
   return box_blocks_;
 }
 
+bool Board::isCellGiven(std::size_t index) const {
+  return cell_state_machines_.at(index).IsGiven();
+}
+
+bool Board::isCellErased(std::size_t index) const {
+  return cell_state_machines_.at(index).IsErased();
+}
+
+bool Board::isCellUserValue(std::size_t index) const {
+  return cell_state_machines_.at(index).IsUserValue();
+}
+
 void Board::refreshValidationState() {
-  for (point_value_t& cell : cells_) {
-    cell.violation = ConstraintViolation::NONE;
+  std::array<ConstraintViolation, CELL_COUNT> user_violation_masks{};
+  user_violation_masks.fill(ConstraintViolation::NONE);
+
+  for (std::size_t index = 0; index < cells_.size(); ++index) {
+    point_value_t& cell = cells_.at(index);
+    cell_state_machines_.at(index).OnCellValueUpdated(cell.is_given, cell.value,
+                                                      ConstraintViolation::NONE);
+    cell.is_given = cell_state_machines_.at(index).IsGiven();
+    cell.violation = cell_state_machines_.at(index).Violation();
   }
 
   bool has_row_violation = false;
   bool has_column_violation = false;
   bool has_box_violation = false;
 
-  for (int row = 0; row < GRID_SIZE; ++row) {
-    std::array<int, GRID_SIZE + 1> first_index_by_value;
-    first_index_by_value.fill(kUntrackedValue);
+  for (std::size_t index = 0; index < cells_.size(); ++index) {
+    const point_value_t& cell = cells_.at(index);
+    if (!cell_state_machines_.at(index).IsUserValue() || !IsFilledCellForValidation(cell)) {
+      continue;
+    }
 
-    for (int column = 0; column < GRID_SIZE; ++column) {
-      const auto index =
-          (static_cast<std::size_t>(row) * static_cast<std::size_t>(GRID_SIZE)) +
-          static_cast<std::size_t>(column);
-      const int value = cells_.at(index).value;
-      if (value < 1 || value > GRID_SIZE) {
-        continue;
-      }
-
-      int& first_index = first_index_by_value.at(static_cast<std::size_t>(value));
-      if (first_index == kUntrackedValue) {
-        first_index = static_cast<int>(index);
-        continue;
-      }
-
+    ConstraintViolation mask = ConstraintViolation::NONE;
+    if (HasRowDuplicate(cells_, index, cell.value)) {
+      mask |= ConstraintViolation::ROW;
       has_row_violation = true;
-      MarkCellViolation(cells_.at(static_cast<std::size_t>(first_index)), ConstraintViolation::ROW);
-      MarkCellViolation(cells_.at(index), ConstraintViolation::ROW);
     }
-  }
-
-  for (int column = 0; column < GRID_SIZE; ++column) {
-    std::array<int, GRID_SIZE + 1> first_index_by_value;
-    first_index_by_value.fill(kUntrackedValue);
-
-    for (int row = 0; row < GRID_SIZE; ++row) {
-      const auto index =
-          (static_cast<std::size_t>(row) * static_cast<std::size_t>(GRID_SIZE)) +
-          static_cast<std::size_t>(column);
-      const int value = cells_.at(index).value;
-      if (value < 1 || value > GRID_SIZE) {
-        continue;
-      }
-
-      int& first_index = first_index_by_value.at(static_cast<std::size_t>(value));
-      if (first_index == kUntrackedValue) {
-        first_index = static_cast<int>(index);
-        continue;
-      }
-
+    if (HasColumnDuplicate(cells_, index, cell.value)) {
+      mask |= ConstraintViolation::COLUMN;
       has_column_violation = true;
-      MarkCellViolation(cells_.at(static_cast<std::size_t>(first_index)), ConstraintViolation::COLUMN);
-      MarkCellViolation(cells_.at(index), ConstraintViolation::COLUMN);
     }
+    if (HasBoxDuplicate(cells_, index, cell.value)) {
+      mask |= ConstraintViolation::BOX;
+      has_box_violation = true;
+    }
+
+    user_violation_masks.at(index) = mask;
   }
 
-  for (int box_row = 0; box_row < BOX_SIZE; ++box_row) {
-    for (int box_column = 0; box_column < BOX_SIZE; ++box_column) {
-      std::array<int, GRID_SIZE + 1> first_index_by_value;
-      first_index_by_value.fill(kUntrackedValue);
-
-      const int start_row = box_row * BOX_SIZE;
-      const int start_column = box_column * BOX_SIZE;
-      for (int row = start_row; row < start_row + BOX_SIZE; ++row) {
-        for (int column = start_column; column < start_column + BOX_SIZE; ++column) {
-          const auto index =
-              (static_cast<std::size_t>(row) * static_cast<std::size_t>(GRID_SIZE)) +
-              static_cast<std::size_t>(column);
-          const int value = cells_.at(index).value;
-          if (value < 1 || value > GRID_SIZE) {
-            continue;
-          }
-
-          int& first_index = first_index_by_value.at(static_cast<std::size_t>(value));
-          if (first_index == kUntrackedValue) {
-            first_index = static_cast<int>(index);
-            continue;
-          }
-
-          has_box_violation = true;
-          MarkCellViolation(cells_.at(static_cast<std::size_t>(first_index)), ConstraintViolation::BOX);
-          MarkCellViolation(cells_.at(index), ConstraintViolation::BOX);
-        }
-      }
-    }
+  for (std::size_t index = 0; index < cells_.size(); ++index) {
+    point_value_t& cell = cells_.at(index);
+    cell_state_machines_.at(index).OnCellValueUpdated(cell.is_given, cell.value,
+                                                      user_violation_masks.at(index));
+    cell.is_given = cell_state_machines_.at(index).IsGiven();
+    cell.violation = cell_state_machines_.at(index).Violation();
   }
 
   violation_summary_ = ConstraintViolation::NONE;
@@ -178,7 +224,7 @@ void Board::refreshValidationState() {
 }
 
 bool Board::isValidState() const {
-  return validation_state_->IsValid();
+  return validation_state_.IsValid();
 }
 
 ConstraintViolation Board::violationSummary() const {
@@ -186,7 +232,7 @@ ConstraintViolation Board::violationSummary() const {
 }
 
 const BoardValidationState& Board::validationState() const {
-  return *validation_state_;
+  return validation_state_;
 }
 
 void Board::rebuildBlocks() {

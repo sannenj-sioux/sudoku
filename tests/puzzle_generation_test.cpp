@@ -69,7 +69,7 @@ int CountErasedCells(const Board& board) {
   int erased_count = 0;
   for (int row = 0; row < GRID_SIZE; ++row) {
     for (int column = 0; column < GRID_SIZE; ++column) {
-      if (ReadCell(board, row, column).state == State::ERASED) {
+      if (!ReadCell(board, row, column).is_given) {
         ++erased_count;
       }
     }
@@ -80,7 +80,7 @@ int CountErasedCells(const Board& board) {
 void SetEditableCell(Board& board, int row, int column, int value) {
   point_value_t& cell = AccessCell(board, row, column);
   cell.value = value;
-  cell.state = State::ERASED;
+  cell.is_given = false;
 }
 
 bool IsSolved(const Board& board) {
@@ -167,7 +167,7 @@ TEST(PuzzleGeneratorTest, SolvedBoardUsesEachDigitInEveryRowColumnAndBox) {
   }
 }
 
-TEST(PuzzleGeneratorTest, SolvedBoardStartsFilledAndInitialized) {
+TEST(PuzzleGeneratorTest, SolvedBoardStartsFilledAndGiven) {
   // Given
   PuzzleGenerator generator;
   Board board;
@@ -180,12 +180,12 @@ TEST(PuzzleGeneratorTest, SolvedBoardStartsFilledAndInitialized) {
     for (int column = 0; column < GRID_SIZE; ++column) {
       const point_value_t cell = ReadCell(board, row, column);
       ExpectCellValueInRange(board, row, column);
-      EXPECT_EQ(cell.state, State::INITED);
+      EXPECT_TRUE(cell.is_given);
     }
   }
 }
 
-TEST(PuzzleGeneratorTest, EraseCellsMarksRequestedNumberOfCellsAsErased) {
+TEST(PuzzleGeneratorTest, EraseCellsMarksRequestedNumberOfCellsAsNonGiven) {
   // Given
   PuzzleGenerator generator;
   Board board;
@@ -198,7 +198,7 @@ TEST(PuzzleGeneratorTest, EraseCellsMarksRequestedNumberOfCellsAsErased) {
   for (int row = 0; row < GRID_SIZE; ++row) {
     for (int column = 0; column < GRID_SIZE; ++column) {
       const point_value_t cell = ReadCell(board, row, column);
-      if (cell.state == State::ERASED) {
+      if (!cell.is_given) {
         EXPECT_EQ(cell.value, static_cast<int>(UNSELECTED));
       }
     }

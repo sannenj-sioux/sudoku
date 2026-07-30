@@ -52,7 +52,7 @@ CScene::CScene(int index, IPuzzleGenerator* puzzle_generator, const ISceneRender
   const auto index =</span>
       static_cast&lt;size_t&gt;(_cur_point.x) + (static_cast&lt;size_t&gt;(_cur_point.y) * GRID_SIZE);
 <span style = "background-color:#dfd">  const auto point = _board.at(index);
-  if (point.state == State::ERASED) {
+  if (!_board.isCellGiven(index)) {
     nLastValue = point.value;
     setValue(nCurValue);
     return true;</span>
@@ -63,8 +63,12 @@ CScene::CScene(int index, IPuzzleGenerator* puzzle_generator, const ISceneRender
 
 <span style = "background-color:#dfd">void CScene::setValue(const point_t&amp; point, int value) {
   const auto index = static_cast&lt;size_t&gt;(point.x) + (static_cast&lt;size_t&gt;(point.y) * GRID_SIZE);
-  _board.at(index).value = value;
-  _board.refreshValidationState();
+  point_value_t&amp; cell = _board.at(index);
+  if (!_board.isCellGiven(index)) {
+    cell.value = value;
+    cell.is_given = false;</span>
+  }
+<span style = "background-color:#dfd">  _board.refreshValidationState();
 }</span>
 
 <span style = "background-color:#dfd">void CScene::setValue(int value) {
@@ -80,8 +84,8 @@ CScene::CScene(int index, IPuzzleGenerator* puzzle_generator, const ISceneRender
 <span style = "background-color:#dfd">bool CScene::isComplete() {
   _board.refreshValidationState();</span>
 
-<span style = "background-color:#dfd">  if (!_board.isValidState()) {
-    return false;</span>
+<span style = "background-color:#dfd">  if (!_board.isValidState()) {</span>
+<span style = "background-color:#fdd">    return false;</span>
   }
 
 <span style = "background-color:#dfd">  const auto&amp; row_blocks = _board.rowBlocks();
@@ -103,7 +107,7 @@ CScene::CScene(int index, IPuzzleGenerator* puzzle_generator, const ISceneRender
           !box_blocks.at(static_cast&lt;size_t&gt;(row / BOX_SIZE))
                .at(static_cast&lt;size_t&gt;(col / BOX_SIZE))
                .isValid()) {
-<span style = "background-color:#fdd">        return false;</span>
+<span style = "background-color:#dfd">        return false;</span>
       }
 <span style = "background-color:#dfd">    }
   }</span>
@@ -126,7 +130,7 @@ CScene::CScene(int index, IPuzzleGenerator* puzzle_generator, const ISceneRender
 
   // save board cells
 <span style = "background-color:#dfd">  for (size_t i = 0; i &lt; _board.size(); ++i) {
-    file_stream &lt;&lt; _board.at(i).value &lt;&lt; ' ' &lt;&lt; static_cast&lt;int&gt;(_board.at(i).state) &lt;&lt; '\n';
+    file_stream &lt;&lt; _board.at(i).value &lt;&lt; ' ' &lt;&lt; (_board.at(i).is_given ? 0 : 1) &lt;&lt; '\n';
   }</span>
 
   // save _cur_point
@@ -155,9 +159,9 @@ CScene::CScene(int index, IPuzzleGenerator* puzzle_generator, const ISceneRender
 
   // load board cells
 <span style = "background-color:#dfd">  for (size_t i = 0; i &lt; _board.size(); ++i) {</span>
-    int tmpState;
-<span style = "background-color:#dfd">    file_stream &gt;&gt; _board.at(i).value &gt;&gt; tmpState;
-    _board.at(i).state = static_cast&lt;State&gt;(tmpState);
+    int given_flag;
+<span style = "background-color:#dfd">    file_stream &gt;&gt; _board.at(i).value &gt;&gt; given_flag;
+    _board.at(i).is_given = (given_flag == 0);
   }</span>
 
   // load _cur_point
@@ -262,8 +266,7 @@ CScene::CScene(int index, IPuzzleGenerator* puzzle_generator, const ISceneRender
 
 <span style = "background-color:#dfd">bool CScene::setPointValue(const point_t&amp; stPoint, int nValue) {
   const auto index = static_cast&lt;size_t&gt;(stPoint.x) + (static_cast&lt;size_t&gt;(stPoint.y) * GRID_SIZE);
-  const auto point = _board.at(index);
-  if (State::ERASED == point.state) {
+  if (!_board.isCellGiven(index)) {
     _cur_point = stPoint;
     setValue(nValue);
     return true;</span>

@@ -1,10 +1,10 @@
 #include <gtest/gtest.h>
 
-#include <memory>
 #include <utility>
 
 #include "board.h"
 #include "board_validation_state.h"
+#include "cell_validation_state_machine.h"
 #include "common.h"
 
 namespace {
@@ -17,7 +17,7 @@ std::size_t ToIndex(int row, int column) {
 void SetEditableCell(Board& board, int row, int column, int value) {
   point_value_t& cell = board.at(ToIndex(row, column));
   cell.value = value;
-  cell.state = State::ERASED;
+  cell.is_given = false;
 }
 
 }  // namespace
@@ -27,13 +27,12 @@ TEST(BoardValidationStateTest, FactoryCreatesValidStateForNoViolations) {
   const ConstraintViolation summary = ConstraintViolation::NONE;
 
   // When
-  const std::unique_ptr<BoardValidationState> state = CreateBoardValidationState(summary);
+  const BoardValidationState state = CreateBoardValidationState(summary);
 
   // Then
-  ASSERT_NE(state, nullptr);
-  EXPECT_TRUE(state->IsValid());
-  EXPECT_STREQ(state->Name(), "BoardValidState");
-  EXPECT_STREQ(state->Message(), "Board is valid");
+  EXPECT_TRUE(state.IsValid());
+  EXPECT_STREQ(state.Name(), "BoardValidState");
+  EXPECT_STREQ(state.Message(), "Board is valid");
 }
 
 TEST(BoardValidationStateTest, FactoryCreatesRowInvalidState) {
@@ -41,13 +40,12 @@ TEST(BoardValidationStateTest, FactoryCreatesRowInvalidState) {
   const ConstraintViolation summary = ConstraintViolation::ROW;
 
   // When
-  const std::unique_ptr<BoardValidationState> state = CreateBoardValidationState(summary);
+  const BoardValidationState state = CreateBoardValidationState(summary);
 
   // Then
-  ASSERT_NE(state, nullptr);
-  EXPECT_FALSE(state->IsValid());
-  EXPECT_STREQ(state->Name(), "BoardInvalidRowState");
-  EXPECT_STREQ(state->Message(), "Row constraint violated");
+  EXPECT_FALSE(state.IsValid());
+  EXPECT_STREQ(state.Name(), "BoardInvalidRowState");
+  EXPECT_STREQ(state.Message(), "Row constraint violated");
 }
 
 TEST(BoardValidationStateTest, FactoryCreatesColumnInvalidState) {
@@ -55,13 +53,12 @@ TEST(BoardValidationStateTest, FactoryCreatesColumnInvalidState) {
   const ConstraintViolation summary = ConstraintViolation::COLUMN;
 
   // When
-  const std::unique_ptr<BoardValidationState> state = CreateBoardValidationState(summary);
+  const BoardValidationState state = CreateBoardValidationState(summary);
 
   // Then
-  ASSERT_NE(state, nullptr);
-  EXPECT_FALSE(state->IsValid());
-  EXPECT_STREQ(state->Name(), "BoardInvalidColumnState");
-  EXPECT_STREQ(state->Message(), "Column constraint violated");
+  EXPECT_FALSE(state.IsValid());
+  EXPECT_STREQ(state.Name(), "BoardInvalidColumnState");
+  EXPECT_STREQ(state.Message(), "Column constraint violated");
 }
 
 TEST(BoardValidationStateTest, FactoryCreatesBoxInvalidState) {
@@ -69,13 +66,12 @@ TEST(BoardValidationStateTest, FactoryCreatesBoxInvalidState) {
   const ConstraintViolation summary = ConstraintViolation::BOX;
 
   // When
-  const std::unique_ptr<BoardValidationState> state = CreateBoardValidationState(summary);
+  const BoardValidationState state = CreateBoardValidationState(summary);
 
   // Then
-  ASSERT_NE(state, nullptr);
-  EXPECT_FALSE(state->IsValid());
-  EXPECT_STREQ(state->Name(), "BoardInvalidBoxState");
-  EXPECT_STREQ(state->Message(), "Box constraint violated");
+  EXPECT_FALSE(state.IsValid());
+  EXPECT_STREQ(state.Name(), "BoardInvalidBoxState");
+  EXPECT_STREQ(state.Message(), "Box constraint violated");
 }
 
 TEST(BoardValidationStateTest, FactoryCreatesMixedInvalidStateForMultipleViolations) {
@@ -83,13 +79,12 @@ TEST(BoardValidationStateTest, FactoryCreatesMixedInvalidStateForMultipleViolati
   const ConstraintViolation summary = ConstraintViolation::ROW | ConstraintViolation::COLUMN;
 
   // When
-  const std::unique_ptr<BoardValidationState> state = CreateBoardValidationState(summary);
+  const BoardValidationState state = CreateBoardValidationState(summary);
 
   // Then
-  ASSERT_NE(state, nullptr);
-  EXPECT_FALSE(state->IsValid());
-  EXPECT_STREQ(state->Name(), "BoardInvalidMixedState");
-  EXPECT_STREQ(state->Message(), "Multiple constraints violated");
+  EXPECT_FALSE(state.IsValid());
+  EXPECT_STREQ(state.Name(), "BoardInvalidMixedState");
+  EXPECT_STREQ(state.Message(), "Multiple constraints violated");
 }
 
 TEST(BoardValidationStateTest, BoardTransitionsFromValidToInvalidAndBackToValid) {
@@ -186,4 +181,98 @@ TEST(BoardValidationStateTest, BoardSelfAssignmentsAreNoOps) {
   EXPECT_FALSE(board.isValidState());
   EXPECT_STREQ(board.validationState().Name(), "BoardInvalidRowState");
   EXPECT_TRUE(HasViolation(board.violationSummary(), ConstraintViolation::ROW));
+}
+
+TEST(BoardValidationStateTest, ErasedZeroCellsDoNotAffectValidationState) {
+  // Given
+  Board board;
+  board.reset();
+
+  point_value_t& a = board.at(ToIndex(0, 0));
+  point_value_t& b = board.at(ToIndex(0, 1));
+  point_value_t& c = board.at(ToIndex(1, 0));
+  a.is_given = false;
+  b.is_given = false;
+  c.is_given = false;
+  a.value = static_cast<int>(UNSELECTED);
+  b.value = static_cast<int>(UNSELECTED);
+  c.value = static_cast<int>(UNSELECTED);
+
+  // When
+  board.refreshValidationState();
+
+  // Then
+  EXPECT_TRUE(board.isValidState());
+  EXPECT_STREQ(board.validationState().Name(), "BoardValidState");
+  EXPECT_EQ(a.violation, ConstraintViolation::NONE);
+  EXPECT_EQ(b.violation, ConstraintViolation::NONE);
+  EXPECT_EQ(c.violation, ConstraintViolation::NONE);
+}
+
+TEST(BoardValidationStateTest, CellStateMachineTransitionsAcrossBaseStates) {
+  // Given
+  CellValidationStateMachine machine;
+
+  // When
+  machine.OnCellValueUpdated(true, 4, ConstraintViolation::ROW);
+
+  // Then
+  EXPECT_TRUE(machine.IsGiven());
+  EXPECT_FALSE(machine.IsErased());
+  EXPECT_FALSE(machine.IsUserValue());
+  EXPECT_EQ(machine.Violation(), ConstraintViolation::NONE);
+
+  // When
+  machine.OnCellValueUpdated(false,
+                             static_cast<int>(UNSELECTED),
+                             ConstraintViolation::ROW);
+
+  // Then
+  EXPECT_FALSE(machine.IsGiven());
+  EXPECT_TRUE(machine.IsErased());
+  EXPECT_FALSE(machine.IsUserValue());
+  EXPECT_EQ(machine.Violation(), ConstraintViolation::NONE);
+
+  // When
+  machine.OnCellValueUpdated(false, 5, ConstraintViolation::NONE);
+
+  // Then
+  EXPECT_FALSE(machine.IsGiven());
+  EXPECT_FALSE(machine.IsErased());
+  EXPECT_TRUE(machine.IsUserValue());
+  EXPECT_EQ(machine.Violation(), ConstraintViolation::NONE);
+}
+
+TEST(BoardValidationStateTest, CellStateMachineTransitionsAcrossUserValueErrorSubstates) {
+  // Given
+  CellValidationStateMachine machine;
+
+  // When
+  machine.OnCellValueUpdated(false, 3, ConstraintViolation::ROW);
+
+  // Then
+  EXPECT_TRUE(machine.IsUserValue());
+  EXPECT_EQ(machine.Violation(), ConstraintViolation::ROW);
+
+  // When
+  machine.OnCellValueUpdated(false, 3, ConstraintViolation::COLUMN);
+
+  // Then
+  EXPECT_EQ(machine.Violation(), ConstraintViolation::COLUMN);
+
+  // When
+  machine.OnCellValueUpdated(false, 3, ConstraintViolation::BOX);
+
+  // Then
+  EXPECT_EQ(machine.Violation(), ConstraintViolation::BOX);
+
+  // When
+  machine.OnCellValueUpdated(false,
+                             3,
+                             ConstraintViolation::ROW | ConstraintViolation::COLUMN);
+
+  // Then
+  EXPECT_TRUE(HasViolation(machine.Violation(), ConstraintViolation::ROW));
+  EXPECT_TRUE(HasViolation(machine.Violation(), ConstraintViolation::COLUMN));
+  EXPECT_TRUE(HasViolation(machine.Violation(), ConstraintViolation::BOX));
 }

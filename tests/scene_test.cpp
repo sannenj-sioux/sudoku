@@ -29,7 +29,7 @@ void FillSolvedBoard(Board& board) {
     for (int col = 0; col < GRID_SIZE; ++col) {
       const auto index = static_cast<size_t>(row * GRID_SIZE + col);
       board.at(index).value = (row * BOX_SIZE + row / BOX_SIZE + col) % GRID_SIZE + 1;
-      board.at(index).state = State::INITED;
+      board.at(index).is_given = true;
     }
   }
 }
@@ -160,7 +160,7 @@ TEST(SceneTest, PlayTopLeftBoundaryClamp) {
   // Then: execution assertions
   EXPECT_NO_THROW(scene.play());
 
-  // Then: state assertions
+  // Then: behavior assertions
   const auto cursor = scene.getCurPoint();
   EXPECT_EQ(cursor.x, 0);
   EXPECT_EQ(cursor.y, 0);
@@ -195,7 +195,7 @@ TEST(SceneTest, PlayTopRightBoundaryClamp) {
   // Then: execution assertions
   EXPECT_NO_THROW(scene.play());
 
-  // Then: state assertions
+  // Then: behavior assertions
   const auto cursor = scene.getCurPoint();
   EXPECT_EQ(cursor.x, GRID_SIZE - 1);
   EXPECT_EQ(cursor.y, 0);
@@ -237,7 +237,7 @@ TEST(SceneTest, PlayBottomRightBoundaryClamp) {
   // Then: execution assertions
   EXPECT_NO_THROW(scene.play());
 
-  // Then: state assertions
+  // Then: behavior assertions
   const auto cursor = scene.getCurPoint();
   EXPECT_EQ(cursor.x, GRID_SIZE - 1);
   EXPECT_EQ(cursor.y, GRID_SIZE - 1);
@@ -278,7 +278,7 @@ TEST(SceneTest, PlayBottomLeftBoundaryClamp) {
   // Then: execution assertions
   EXPECT_NO_THROW(scene.play());
 
-  // Then: state assertions
+  // Then: behavior assertions
   const auto cursor = scene.getCurPoint();
   EXPECT_EQ(cursor.x, 0);
   EXPECT_EQ(cursor.y, GRID_SIZE - 1);
@@ -351,7 +351,7 @@ TEST(SceneTest, PlayUndoBranchReRendersAfterUndo) {
   EXPECT_CALL(mock_generator, EraseCells(::testing::_, ::testing::_))
       .Times(1)
       .WillOnce(::testing::Invoke([](Board& board, int) {
-        board.at(0).state = State::ERASED;
+        board.at(0).is_given = false;
       }));
   scene.eraseRandomGrids(1);
 
@@ -409,7 +409,7 @@ TEST(SceneTest, PlayRetriesSavePathUntilSaveSucceeds) {
   // Then: execution assertions
   EXPECT_NO_THROW(scene.play());
 
-  // Then: state assertions
+  // Then: behavior assertions
   EXPECT_TRUE(std::filesystem::exists(new_path));
 
   std::filesystem::remove(existing_path);
@@ -476,7 +476,7 @@ TEST(SceneTest, IsCompleteReturnsFalseForNewScene) {
   EXPECT_FALSE(scene.isComplete());
 }
 
-TEST(SceneTest, SetPointValueReturnsFalseForInitedCell) {
+TEST(SceneTest, SetPointValueReturnsFalseForGivenCell) {
   // Given
   CScene scene;
 
@@ -484,7 +484,7 @@ TEST(SceneTest, SetPointValueReturnsFalseForInitedCell) {
   EXPECT_FALSE(scene.setPointValue({0, 0}, 5));
 }
 
-TEST(SceneTest, SetCurValueReturnsFalseForInitedCursorCell) {
+TEST(SceneTest, SetCurValueReturnsFalseForGivenCursorCell) {
   // Given
   CScene scene;
 
@@ -495,7 +495,7 @@ TEST(SceneTest, SetCurValueReturnsFalseForInitedCursorCell) {
   EXPECT_EQ(last_value, 99);
 }
 
-TEST(SceneTest, SetPointValueAndSetCurValueWorkForErasedCell) {
+TEST(SceneTest, SetPointValueAndSetCurValueWorkForNonGivenCell) {
   // Given
   MockPuzzleGenerator mock_generator;
   CScene scene(3, &mock_generator);
@@ -504,13 +504,13 @@ TEST(SceneTest, SetPointValueAndSetCurValueWorkForErasedCell) {
   EXPECT_CALL(mock_generator, EraseCells(::testing::_, ::testing::_))
       .Times(1)
       .WillOnce(::testing::Invoke([](Board& board, int) {
-        board.at(0).state = State::ERASED;
+        board.at(0).is_given = false;
       }));
 
   // When
   scene.eraseRandomGrids(1);
 
-  // Then: state assertions
+  // Then: behavior assertions
   EXPECT_TRUE(scene.setPointValue({0, 0}, 7));
   EXPECT_EQ(scene.getCurPoint().x, 0);
   EXPECT_EQ(scene.getCurPoint().y, 0);
@@ -562,7 +562,7 @@ TEST(SceneTest, SaveAndLoadRoundTripPreservesCursorAndEditableCellValue) {
   EXPECT_CALL(mock_generator, EraseCells(::testing::_, ::testing::_))
       .Times(1)
       .WillOnce(::testing::Invoke([](Board& board, int) {
-        board.at(0).state = State::ERASED;
+        board.at(0).is_given = false;
       }));
 
   // When
@@ -578,7 +578,7 @@ TEST(SceneTest, SaveAndLoadRoundTripPreservesCursorAndEditableCellValue) {
   CScene loaded_scene;
   EXPECT_TRUE(loaded_scene.load(save_path.string().c_str()));
 
-  // Then: state assertions
+  // Then: behavior assertions
   const point_t loaded_cursor = loaded_scene.getCurPoint();
   EXPECT_EQ(loaded_cursor.x, 0);
   EXPECT_EQ(loaded_cursor.y, 0);
@@ -623,7 +623,7 @@ TEST(SceneTest, LoadWithCommandHistoryThenSaveSerializesCommands) {
   {
     std::ofstream source(load_path.string());
     for (int i = 0; i < CELL_COUNT; ++i) {
-      source << 0 << ' ' << static_cast<int>(State::INITED) << '\n';
+      source << 0 << ' ' << 0 << '\n';
     }
     source << 2 << ' ' << 3 << '\n';
     source << 1 << '\n';

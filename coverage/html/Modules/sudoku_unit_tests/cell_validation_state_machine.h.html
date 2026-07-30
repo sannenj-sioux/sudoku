@@ -1,0 +1,258 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+        <meta charset="utf-8"/>
+	    <title>cell_validation_state_machine.h</title>
+	    <link href="../../third-party/google-code-prettify/prettify-CppCoverage.css" type="text/css" rel="stylesheet" />
+	    <script type="text/javascript" src="../../third-party/google-code-prettify/prettify.js"></script>
+	</head>
+    <body onload="prettyPrint()">
+        <h4></h4>
+        <pre class="prettyprint lang-cpp linenums">
+#pragma once
+
+#include &lt;memory&gt;
+
+#include "common.h"
+
+struct CellValueUpdatedEvent {
+  bool is_given;
+  int value;
+  ConstraintViolation violations;
+};
+
+class CellValidationState;
+class CellGivenState;
+class CellErasedState;
+class CellUserValueValidState;
+class CellUserValueInvalidRowState;
+class CellUserValueInvalidColumnState;
+class CellUserValueInvalidBoxState;
+class CellUserValueInvalidMixedState;
+
+namespace cell_validation_detail {
+inline std::unique_ptr&lt;CellValidationState&gt; BuildGivenState();
+inline std::unique_ptr&lt;CellValidationState&gt; BuildErasedState();
+inline std::unique_ptr&lt;CellValidationState&gt; BuildUserValueState(ConstraintViolation violations);
+}  // namespace cell_validation_detail
+
+class CellValidationState {
+ public:
+<span style = "background-color:#dfd">  virtual ~CellValidationState() = default;</span>
+
+  virtual std::unique_ptr&lt;CellValidationState&gt; OnCellValueUpdated(
+      const CellValueUpdatedEvent&amp; event) const = 0;
+  virtual bool IsGiven() const = 0;
+  virtual bool IsErased() const = 0;
+  virtual bool IsUserValue() const = 0;
+  virtual ConstraintViolation Violation() const = 0;
+  virtual const char* Name() const = 0;
+};
+
+class CellGivenState : public CellValidationState {
+ public:
+  std::unique_ptr&lt;CellValidationState&gt; OnCellValueUpdated(
+<span style = "background-color:#dfd">      const CellValueUpdatedEvent&amp; event) const override {
+    if (event.is_given) {
+      return cell_validation_detail::BuildGivenState();</span>
+    }
+<span style = "background-color:#dfd">    if (event.value == static_cast&lt;int&gt;(UNSELECTED)) {
+      return cell_validation_detail::BuildErasedState();</span>
+    }
+<span style = "background-color:#dfd">    return cell_validation_detail::BuildUserValueState(event.violations);
+  }</span>
+
+<span style = "background-color:#dfd">  bool IsGiven() const override { return true; }
+  bool IsErased() const override { return false; }
+  bool IsUserValue() const override { return false; }
+  ConstraintViolation Violation() const override { return ConstraintViolation::NONE; }</span>
+<span style = "background-color:#fdd">  const char* Name() const override { return "CellGivenState"; }</span>
+};
+
+class CellErasedState : public CellValidationState {
+ public:
+  std::unique_ptr&lt;CellValidationState&gt; OnCellValueUpdated(
+<span style = "background-color:#dfd">      const CellValueUpdatedEvent&amp; event) const override {
+    if (event.is_given) {
+      return cell_validation_detail::BuildGivenState();</span>
+    }
+<span style = "background-color:#dfd">    if (event.value == static_cast&lt;int&gt;(UNSELECTED)) {
+      return cell_validation_detail::BuildErasedState();</span>
+    }
+<span style = "background-color:#dfd">    return cell_validation_detail::BuildUserValueState(event.violations);
+  }</span>
+
+<span style = "background-color:#dfd">  bool IsGiven() const override { return false; }
+  bool IsErased() const override { return true; }
+  bool IsUserValue() const override { return false; }
+  ConstraintViolation Violation() const override { return ConstraintViolation::NONE; }</span>
+<span style = "background-color:#fdd">  const char* Name() const override { return "CellErasedState"; }</span>
+};
+
+class CellUserValueValidState : public CellValidationState {
+ public:
+  std::unique_ptr&lt;CellValidationState&gt; OnCellValueUpdated(
+<span style = "background-color:#dfd">      const CellValueUpdatedEvent&amp; event) const override {
+    if (event.is_given) {</span>
+<span style = "background-color:#fdd">      return cell_validation_detail::BuildGivenState();</span>
+    }
+<span style = "background-color:#dfd">    if (event.value == static_cast&lt;int&gt;(UNSELECTED)) {
+      return cell_validation_detail::BuildErasedState();</span>
+    }
+<span style = "background-color:#dfd">    return cell_validation_detail::BuildUserValueState(event.violations);
+  }</span>
+
+<span style = "background-color:#dfd">  bool IsGiven() const override { return false; }
+  bool IsErased() const override { return false; }
+  bool IsUserValue() const override { return true; }
+  ConstraintViolation Violation() const override { return ConstraintViolation::NONE; }</span>
+<span style = "background-color:#fdd">  const char* Name() const override { return "CellUserValueValidState"; }</span>
+};
+
+class CellUserValueInvalidRowState : public CellValidationState {
+ public:
+  std::unique_ptr&lt;CellValidationState&gt; OnCellValueUpdated(
+<span style = "background-color:#dfd">      const CellValueUpdatedEvent&amp; event) const override {
+    if (event.is_given) {</span>
+<span style = "background-color:#fdd">      return cell_validation_detail::BuildGivenState();</span>
+    }
+<span style = "background-color:#dfd">    if (event.value == static_cast&lt;int&gt;(UNSELECTED)) {</span>
+<span style = "background-color:#fdd">      return cell_validation_detail::BuildErasedState();</span>
+    }
+<span style = "background-color:#dfd">    return cell_validation_detail::BuildUserValueState(event.violations);
+  }</span>
+
+<span style = "background-color:#dfd">  bool IsGiven() const override { return false; }</span>
+<span style = "background-color:#fdd">  bool IsErased() const override { return false; }</span>
+<span style = "background-color:#dfd">  bool IsUserValue() const override { return true; }
+  ConstraintViolation Violation() const override { return ConstraintViolation::ROW; }</span>
+<span style = "background-color:#fdd">  const char* Name() const override { return "CellUserValueInvalidRowState"; }</span>
+};
+
+class CellUserValueInvalidColumnState : public CellValidationState {
+ public:
+  std::unique_ptr&lt;CellValidationState&gt; OnCellValueUpdated(
+<span style = "background-color:#dfd">      const CellValueUpdatedEvent&amp; event) const override {
+    if (event.is_given) {</span>
+<span style = "background-color:#fdd">      return cell_validation_detail::BuildGivenState();</span>
+    }
+<span style = "background-color:#dfd">    if (event.value == static_cast&lt;int&gt;(UNSELECTED)) {</span>
+<span style = "background-color:#fdd">      return cell_validation_detail::BuildErasedState();</span>
+    }
+<span style = "background-color:#dfd">    return cell_validation_detail::BuildUserValueState(event.violations);
+  }</span>
+
+<span style = "background-color:#dfd">  bool IsGiven() const override { return false; }</span>
+<span style = "background-color:#fdd">  bool IsErased() const override { return false; }
+  bool IsUserValue() const override { return true; }</span>
+<span style = "background-color:#dfd">  ConstraintViolation Violation() const override { return ConstraintViolation::COLUMN; }</span>
+<span style = "background-color:#fdd">  const char* Name() const override { return "CellUserValueInvalidColumnState"; }</span>
+};
+
+class CellUserValueInvalidBoxState : public CellValidationState {
+ public:
+  std::unique_ptr&lt;CellValidationState&gt; OnCellValueUpdated(
+<span style = "background-color:#dfd">      const CellValueUpdatedEvent&amp; event) const override {
+    if (event.is_given) {</span>
+<span style = "background-color:#fdd">      return cell_validation_detail::BuildGivenState();</span>
+    }
+<span style = "background-color:#dfd">    if (event.value == static_cast&lt;int&gt;(UNSELECTED)) {</span>
+<span style = "background-color:#fdd">      return cell_validation_detail::BuildErasedState();</span>
+    }
+<span style = "background-color:#dfd">    return cell_validation_detail::BuildUserValueState(event.violations);
+  }</span>
+
+<span style = "background-color:#dfd">  bool IsGiven() const override { return false; }</span>
+<span style = "background-color:#fdd">  bool IsErased() const override { return false; }
+  bool IsUserValue() const override { return true; }</span>
+<span style = "background-color:#dfd">  ConstraintViolation Violation() const override { return ConstraintViolation::BOX; }</span>
+<span style = "background-color:#fdd">  const char* Name() const override { return "CellUserValueInvalidBoxState"; }</span>
+};
+
+class CellUserValueInvalidMixedState : public CellValidationState {
+ public:
+  std::unique_ptr&lt;CellValidationState&gt; OnCellValueUpdated(
+<span style = "background-color:#dfd">      const CellValueUpdatedEvent&amp; event) const override {
+    if (event.is_given) {</span>
+<span style = "background-color:#fdd">      return cell_validation_detail::BuildGivenState();</span>
+    }
+<span style = "background-color:#dfd">    if (event.value == static_cast&lt;int&gt;(UNSELECTED)) {</span>
+<span style = "background-color:#fdd">      return cell_validation_detail::BuildErasedState();</span>
+    }
+<span style = "background-color:#dfd">    return cell_validation_detail::BuildUserValueState(event.violations);
+  }</span>
+
+<span style = "background-color:#dfd">  bool IsGiven() const override { return false; }</span>
+<span style = "background-color:#fdd">  bool IsErased() const override { return false; }
+  bool IsUserValue() const override { return true; }</span>
+<span style = "background-color:#dfd">  ConstraintViolation Violation() const override {
+    return ConstraintViolation::ROW | ConstraintViolation::COLUMN | ConstraintViolation::BOX;
+  }</span>
+<span style = "background-color:#fdd">  const char* Name() const override { return "CellUserValueInvalidMixedState"; }</span>
+};
+
+namespace cell_validation_detail {
+<span style = "background-color:#dfd">inline std::unique_ptr&lt;CellValidationState&gt; BuildGivenState() {
+  return std::make_unique&lt;CellGivenState&gt;();
+}</span>
+
+<span style = "background-color:#dfd">inline std::unique_ptr&lt;CellValidationState&gt; BuildErasedState() {
+  return std::make_unique&lt;CellErasedState&gt;();
+}</span>
+
+<span style = "background-color:#dfd">inline std::unique_ptr&lt;CellValidationState&gt; BuildUserValueState(ConstraintViolation violations) {
+  const bool has_row = HasViolation(violations, ConstraintViolation::ROW);
+  const bool has_column = HasViolation(violations, ConstraintViolation::COLUMN);
+  const bool has_box = HasViolation(violations, ConstraintViolation::BOX);
+  const int active_violation_count = static_cast&lt;int&gt;(has_row) + static_cast&lt;int&gt;(has_column) +</span>
+                                     static_cast&lt;int&gt;(has_box);
+
+<span style = "background-color:#dfd">  if (active_violation_count == 0) {
+    return std::make_unique&lt;CellUserValueValidState&gt;();</span>
+  }
+<span style = "background-color:#dfd">  if (active_violation_count &gt; 1) {
+    return std::make_unique&lt;CellUserValueInvalidMixedState&gt;();</span>
+  }
+<span style = "background-color:#dfd">  if (has_row) {
+    return std::make_unique&lt;CellUserValueInvalidRowState&gt;();</span>
+  }
+<span style = "background-color:#dfd">  if (has_column) {
+    return std::make_unique&lt;CellUserValueInvalidColumnState&gt;();</span>
+  }
+<span style = "background-color:#dfd">  return std::make_unique&lt;CellUserValueInvalidBoxState&gt;();
+}</span>
+}  // namespace cell_validation_detail
+
+class CellValidationStateMachine {
+ public:
+<span style = "background-color:#dfd">  CellValidationStateMachine() : state_(cell_validation_detail::BuildErasedState()) {}</span>
+
+<span style = "background-color:#dfd">  void OnCellValueUpdated(bool is_given, int value, ConstraintViolation violations) {
+    const CellValueUpdatedEvent event{is_given, value, violations};
+    state_ = state_-&gt;OnCellValueUpdated(event);
+  }</span>
+
+<span style = "background-color:#dfd">  bool IsGiven() const { return state_-&gt;IsGiven(); }
+  bool IsErased() const { return state_-&gt;IsErased(); }
+  bool IsUserValue() const { return state_-&gt;IsUserValue(); }
+  ConstraintViolation Violation() const { return state_-&gt;Violation(); }</span>
+  const char* StateName() const { return state_-&gt;Name(); }
+
+ private:
+  std::unique_ptr&lt;CellValidationState&gt; state_;
+};</pre>
+        <hr />
+        <table width="100%">
+            <thead>
+                <tr>
+                    <th align="center">
+                        <small>Generated by</small>
+                        <a href="https://github.com/OpenCppCoverage/OpenCppCoverage/releases">
+                            <strong>OpenCppCoverage (Version: 0.9.9.0)</strong>
+                        </a>
+                    </th>
+                </tr>
+            </thead>
+        </table>
+    </body>
+</html>

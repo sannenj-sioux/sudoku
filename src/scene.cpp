@@ -41,7 +41,7 @@ bool CScene::setCurValue(int nCurValue, int& nLastValue) {
   const auto index =
       static_cast<size_t>(_cur_point.x) + (static_cast<size_t>(_cur_point.y) * GRID_SIZE);
   const auto point = _board.at(index);
-  if (point.state == State::ERASED) {
+  if (!_board.isCellGiven(index)) {
     nLastValue = point.value;
     setValue(nCurValue);
     return true;
@@ -52,7 +52,11 @@ bool CScene::setCurValue(int nCurValue, int& nLastValue) {
 
 void CScene::setValue(const point_t& point, int value) {
   const auto index = static_cast<size_t>(point.x) + (static_cast<size_t>(point.y) * GRID_SIZE);
-  _board.at(index).value = value;
+  point_value_t& cell = _board.at(index);
+  if (!_board.isCellGiven(index)) {
+    cell.value = value;
+    cell.is_given = false;
+  }
   _board.refreshValidationState();
 }
 
@@ -115,7 +119,7 @@ bool CScene::save(const char* filename) {
 
   // save board cells
   for (size_t i = 0; i < _board.size(); ++i) {
-    file_stream << _board.at(i).value << ' ' << static_cast<int>(_board.at(i).state) << '\n';
+    file_stream << _board.at(i).value << ' ' << (_board.at(i).is_given ? 0 : 1) << '\n';
   }
 
   // save _cur_point
@@ -144,9 +148,9 @@ bool CScene::load(const char* filename) {
 
   // load board cells
   for (size_t i = 0; i < _board.size(); ++i) {
-    int tmpState;
-    file_stream >> _board.at(i).value >> tmpState;
-    _board.at(i).state = static_cast<State>(tmpState);
+    int given_flag;
+    file_stream >> _board.at(i).value >> given_flag;
+    _board.at(i).is_given = (given_flag == 0);
   }
 
   // load _cur_point
@@ -251,8 +255,7 @@ void CScene::generate() {
 
 bool CScene::setPointValue(const point_t& stPoint, int nValue) {
   const auto index = static_cast<size_t>(stPoint.x) + (static_cast<size_t>(stPoint.y) * GRID_SIZE);
-  const auto point = _board.at(index);
-  if (State::ERASED == point.state) {
+  if (!_board.isCellGiven(index)) {
     _cur_point = stPoint;
     setValue(nValue);
     return true;

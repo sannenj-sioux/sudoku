@@ -21,7 +21,7 @@ CBlock BuildSingleRowBlockWithFirstCell(point_value_t* first_cell) {
 
   static point_value_t filler_cells[GRID_SIZE - 1];
   for (int i = 0; i < GRID_SIZE - 1; ++i) {
-    filler_cells[i] = {static_cast<int>(UNSELECTED), State::INITED, ConstraintViolation::NONE};
+    filler_cells[i] = {static_cast<int>(UNSELECTED), true, ConstraintViolation::NONE};
     block.push_back(&filler_cells[i]);
   }
   return block;
@@ -31,7 +31,7 @@ CBlock BuildSingleRowBlockWithFirstCell(point_value_t* first_cell) {
 
 TEST(BlockRenderTest, ProvidedCellWithViolationStaysDefaultColor) {
   // Given
-  point_value_t provided_cell{5, State::INITED, ConstraintViolation::ROW};
+  point_value_t provided_cell{5, true, ConstraintViolation::ROW};
   CBlock block = BuildSingleRowBlockWithFirstCell(&provided_cell);
 
   // When
@@ -46,7 +46,7 @@ TEST(BlockRenderTest, ProvidedCellWithViolationStaysDefaultColor) {
 
 TEST(BlockRenderTest, EditableCellWithRowViolationIsColoredAsError) {
   // Given
-  point_value_t editable_cell{7, State::ERASED, ConstraintViolation::ROW};
+  point_value_t editable_cell{7, false, ConstraintViolation::ROW};
   CBlock block = BuildSingleRowBlockWithFirstCell(&editable_cell);
 
   // When
@@ -61,7 +61,7 @@ TEST(BlockRenderTest, EditableCellWithRowViolationIsColoredAsError) {
 TEST(BlockRenderTest, EditableCellWithMultipleViolationsUsesMixedErrorStyle) {
   // Given
   point_value_t editable_cell{9,
-                              State::ERASED,
+                              false,
                               ConstraintViolation::ROW | ConstraintViolation::COLUMN};
   CBlock block = BuildSingleRowBlockWithFirstCell(&editable_cell);
 
@@ -76,7 +76,7 @@ TEST(BlockRenderTest, EditableCellWithMultipleViolationsUsesMixedErrorStyle) {
 
 TEST(BlockRenderTest, EditableCellWithColumnViolationIsColoredAsError) {
   // Given
-  point_value_t editable_cell{4, State::ERASED, ConstraintViolation::COLUMN};
+  point_value_t editable_cell{4, false, ConstraintViolation::COLUMN};
   CBlock block = BuildSingleRowBlockWithFirstCell(&editable_cell);
 
   // When
@@ -90,7 +90,7 @@ TEST(BlockRenderTest, EditableCellWithColumnViolationIsColoredAsError) {
 
 TEST(BlockRenderTest, EditableCellWithBoxViolationIsColoredAsError) {
   // Given
-  point_value_t editable_cell{6, State::ERASED, ConstraintViolation::BOX};
+  point_value_t editable_cell{6, false, ConstraintViolation::BOX};
   CBlock block = BuildSingleRowBlockWithFirstCell(&editable_cell);
 
   // When
@@ -104,7 +104,7 @@ TEST(BlockRenderTest, EditableCellWithBoxViolationIsColoredAsError) {
 
 TEST(BlockRenderTest, EditableCellWithUnknownViolationFallsBackToDefaultColor) {
   // Given
-  point_value_t editable_cell{8, State::ERASED, static_cast<ConstraintViolation>(8)};
+  point_value_t editable_cell{8, false, static_cast<ConstraintViolation>(8)};
   CBlock block = BuildSingleRowBlockWithFirstCell(&editable_cell);
 
   // When
@@ -119,15 +119,15 @@ TEST(BlockRenderTest, EditableCellWithUnknownViolationFallsBackToDefaultColor) {
 TEST(BlockRenderTest, PrintHighlightsCursorAndMatchingNumbers) {
   // Given
   point_value_t cells[GRID_SIZE] = {
-      {2, State::INITED, ConstraintViolation::NONE},
-      {2, State::INITED, ConstraintViolation::NONE},
-      {3, State::INITED, ConstraintViolation::NONE},
-      {4, State::INITED, ConstraintViolation::NONE},
-      {5, State::INITED, ConstraintViolation::NONE},
-      {6, State::INITED, ConstraintViolation::NONE},
-      {7, State::INITED, ConstraintViolation::NONE},
-      {8, State::INITED, ConstraintViolation::NONE},
-      {9, State::INITED, ConstraintViolation::NONE},
+      {2, true, ConstraintViolation::NONE},
+      {2, true, ConstraintViolation::NONE},
+      {3, true, ConstraintViolation::NONE},
+      {4, true, ConstraintViolation::NONE},
+      {5, true, ConstraintViolation::NONE},
+      {6, true, ConstraintViolation::NONE},
+      {7, true, ConstraintViolation::NONE},
+      {8, true, ConstraintViolation::NONE},
+      {9, true, ConstraintViolation::NONE},
   };
 
   CBlock block;
@@ -148,15 +148,15 @@ TEST(BlockRenderTest, PrintHighlightsCursorAndMatchingNumbers) {
 TEST(BlockRenderTest, IsValidHandlesUnselectedAndDuplicateCases) {
   // Given
   point_value_t valid_with_unselected[GRID_SIZE] = {
-      {1, State::INITED, ConstraintViolation::NONE},
-      {2, State::INITED, ConstraintViolation::NONE},
-      {3, State::INITED, ConstraintViolation::NONE},
-      {4, State::INITED, ConstraintViolation::NONE},
-      {5, State::INITED, ConstraintViolation::NONE},
-      {6, State::INITED, ConstraintViolation::NONE},
-      {7, State::INITED, ConstraintViolation::NONE},
-      {8, State::INITED, ConstraintViolation::NONE},
-      {static_cast<int>(UNSELECTED), State::ERASED, ConstraintViolation::NONE},
+      {1, true, ConstraintViolation::NONE},
+      {2, true, ConstraintViolation::NONE},
+      {3, true, ConstraintViolation::NONE},
+      {4, true, ConstraintViolation::NONE},
+      {5, true, ConstraintViolation::NONE},
+      {6, true, ConstraintViolation::NONE},
+      {7, true, ConstraintViolation::NONE},
+      {8, true, ConstraintViolation::NONE},
+      {static_cast<int>(UNSELECTED), false, ConstraintViolation::NONE},
   };
 
   CBlock block_with_unselected;
@@ -165,15 +165,15 @@ TEST(BlockRenderTest, IsValidHandlesUnselectedAndDuplicateCases) {
   }
 
   point_value_t invalid_with_duplicate[GRID_SIZE] = {
-      {1, State::INITED, ConstraintViolation::NONE},
-      {2, State::INITED, ConstraintViolation::NONE},
-      {3, State::INITED, ConstraintViolation::NONE},
-      {4, State::INITED, ConstraintViolation::NONE},
-      {5, State::INITED, ConstraintViolation::NONE},
-      {6, State::INITED, ConstraintViolation::NONE},
-      {7, State::INITED, ConstraintViolation::NONE},
-      {8, State::INITED, ConstraintViolation::NONE},
-      {1, State::ERASED, ConstraintViolation::NONE},
+      {1, true, ConstraintViolation::NONE},
+      {2, true, ConstraintViolation::NONE},
+      {3, true, ConstraintViolation::NONE},
+      {4, true, ConstraintViolation::NONE},
+      {5, true, ConstraintViolation::NONE},
+      {6, true, ConstraintViolation::NONE},
+      {7, true, ConstraintViolation::NONE},
+      {8, true, ConstraintViolation::NONE},
+      {1, false, ConstraintViolation::NONE},
   };
 
   CBlock block_with_duplicate;
@@ -189,26 +189,26 @@ TEST(BlockRenderTest, IsValidHandlesUnselectedAndDuplicateCases) {
 TEST(BlockRenderTest, IsFullAndGetNumberValueHandleEdgeCases) {
   // Given
   point_value_t full_cells[GRID_SIZE] = {
-      {1, State::INITED, ConstraintViolation::NONE},
-      {2, State::INITED, ConstraintViolation::NONE},
-      {3, State::INITED, ConstraintViolation::NONE},
-      {4, State::INITED, ConstraintViolation::NONE},
-      {5, State::INITED, ConstraintViolation::NONE},
-      {6, State::INITED, ConstraintViolation::NONE},
-      {7, State::INITED, ConstraintViolation::NONE},
-      {8, State::INITED, ConstraintViolation::NONE},
-      {9, State::INITED, ConstraintViolation::NONE},
+      {1, true, ConstraintViolation::NONE},
+      {2, true, ConstraintViolation::NONE},
+      {3, true, ConstraintViolation::NONE},
+      {4, true, ConstraintViolation::NONE},
+      {5, true, ConstraintViolation::NONE},
+      {6, true, ConstraintViolation::NONE},
+      {7, true, ConstraintViolation::NONE},
+      {8, true, ConstraintViolation::NONE},
+      {9, true, ConstraintViolation::NONE},
   };
   point_value_t not_full_cells[GRID_SIZE] = {
-      {1, State::INITED, ConstraintViolation::NONE},
-      {2, State::INITED, ConstraintViolation::NONE},
-      {3, State::INITED, ConstraintViolation::NONE},
-      {4, State::INITED, ConstraintViolation::NONE},
-      {5, State::INITED, ConstraintViolation::NONE},
-      {6, State::INITED, ConstraintViolation::NONE},
-      {7, State::INITED, ConstraintViolation::NONE},
-      {8, State::INITED, ConstraintViolation::NONE},
-      {static_cast<int>(UNSELECTED), State::ERASED, ConstraintViolation::NONE},
+      {1, true, ConstraintViolation::NONE},
+      {2, true, ConstraintViolation::NONE},
+      {3, true, ConstraintViolation::NONE},
+      {4, true, ConstraintViolation::NONE},
+      {5, true, ConstraintViolation::NONE},
+      {6, true, ConstraintViolation::NONE},
+      {7, true, ConstraintViolation::NONE},
+      {8, true, ConstraintViolation::NONE},
+      {static_cast<int>(UNSELECTED), false, ConstraintViolation::NONE},
   };
 
   CBlock full_block;
@@ -224,4 +224,36 @@ TEST(BlockRenderTest, IsFullAndGetNumberValueHandleEdgeCases) {
   EXPECT_EQ(full_block.getNumberValue(0), 1);
   EXPECT_EQ(full_block.getNumberValue(GRID_SIZE), static_cast<int>(UNSELECTED));
   EXPECT_EQ(full_block.getNumberValue(-1), static_cast<int>(UNSELECTED));
+}
+
+TEST(BlockRenderTest, ErasedZeroCellIsNeverViolationColored) {
+  // Given
+  point_value_t erased_zero_cell{static_cast<int>(UNSELECTED),
+                                 false,
+                                 ConstraintViolation::ROW | ConstraintViolation::COLUMN};
+  CBlock block = BuildSingleRowBlockWithFirstCell(&erased_zero_cell);
+
+  // When
+  testing::internal::CaptureStdout();
+  block.print();
+  const std::string output = testing::internal::GetCapturedStdout();
+
+  // Then
+  EXPECT_EQ(output.find(kFgWhiteOnRed), std::string::npos);
+  EXPECT_EQ(output.find(kFgLightRed), std::string::npos);
+  EXPECT_EQ(output.find(kFgLightCyan), std::string::npos);
+}
+
+TEST(BlockRenderTest, NonGivenFilledCellWithViolationIsErrorColored) {
+  // Given
+  point_value_t erased_non_zero{5, false, ConstraintViolation::ROW};
+  CBlock block = BuildSingleRowBlockWithFirstCell(&erased_non_zero);
+
+  // When
+  testing::internal::CaptureStdout();
+  block.print();
+  const std::string output = testing::internal::GetCapturedStdout();
+
+  // Then
+  EXPECT_NE(output.find(kFgLightRed), std::string::npos);
 }

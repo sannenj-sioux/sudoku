@@ -28,10 +28,10 @@ namespace {
          static_cast&lt;std::size_t&gt;(column);
 <span style = "background-color:#dfd">}</span>
 
-<span style = "background-color:#dfd">void SetCell(Board&amp; board, int row, int column, int value, State state) {
+<span style = "background-color:#dfd">void SetCell(Board&amp; board, int row, int column, int value, bool is_given) {
   point_value_t&amp; cell = board.at(ToIndex(row, column));
   cell.value = value;
-  cell.state = state;
+  cell.is_given = is_given;
 }</span>
 
 }  // namespace
@@ -117,7 +117,7 @@ namespace {
 <span style = "background-color:#dfd">  board.reset();
   for (int row = 0; row &lt; GRID_SIZE; ++row) {
     for (int column = 0; column &lt; GRID_SIZE; ++column) {
-      SetCell(board, row, column, matrix[row][column], State::INITED);
+      SetCell(board, row, column, matrix[row][column], true);
     }
   }
 }</span>
@@ -132,7 +132,7 @@ namespace {
     const auto random_index =</span>
         static_cast&lt;std::size_t&gt;(RandomInt(0, static_cast&lt;int&gt;(cell_indexes.size() - 1)));
 <span style = "background-color:#dfd">    board.at(static_cast&lt;std::size_t&gt;(cell_indexes.at(random_index))) =</span>
-      {static_cast&lt;int&gt;(UNSELECTED), State::ERASED, ConstraintViolation::NONE};
+      {static_cast&lt;int&gt;(UNSELECTED), false, ConstraintViolation::NONE};
 <span style = "background-color:#dfd">    cell_indexes.erase(cell_indexes.begin() +</span>
                        static_cast&lt;std::vector&lt;int&gt;::difference_type&gt;(random_index));
 <span style = "background-color:#dfd">  }

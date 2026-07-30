@@ -7,11 +7,6 @@ static constexpr int GRID_SIZE = BOX_SIZE * BOX_SIZE; // Square grids
 
 enum class Difficulty : int { EASY = 1, NORMAL, HARD };
 
-enum class State : int {
-  INITED = 0,
-  ERASED,
-};
-
 enum class ConstraintViolation : unsigned char {
   NONE = 0,
   ROW = 1,
@@ -40,7 +35,7 @@ struct point_t {
 
 struct point_value_t {
   int value;
-  State state;
+  bool is_given;
   ConstraintViolation violation;
 };
 

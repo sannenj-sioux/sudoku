@@ -2,10 +2,10 @@
 
 #include <array>
 #include <cstddef>
-#include <memory>
 
 #include "block.h"
 #include "board_validation_state.h"
+#include "cell_validation_state_machine.h"
 #include "common.h"
 
 class Board {
@@ -27,6 +27,10 @@ class Board {
   const std::array<CBlock, GRID_SIZE>& columnBlocks() const;
   const std::array<std::array<CBlock, BOX_SIZE>, BOX_SIZE>& boxBlocks() const;
 
+  bool isCellGiven(std::size_t index) const;
+  bool isCellErased(std::size_t index) const;
+  bool isCellUserValue(std::size_t index) const;
+
   void refreshValidationState();
   bool isValidState() const;
   ConstraintViolation violationSummary() const;
@@ -36,9 +40,10 @@ class Board {
   void rebuildBlocks();
 
   std::array<point_value_t, CELL_COUNT> cells_;
+  std::array<CellValidationStateMachine, CELL_COUNT> cell_state_machines_;
   std::array<CBlock, GRID_SIZE> row_blocks_;
   std::array<CBlock, GRID_SIZE> column_blocks_;
   std::array<std::array<CBlock, BOX_SIZE>, BOX_SIZE> box_blocks_;
   ConstraintViolation violation_summary_;
-  std::unique_ptr<BoardValidationState> validation_state_;
+  BoardValidationState validation_state_;
 };

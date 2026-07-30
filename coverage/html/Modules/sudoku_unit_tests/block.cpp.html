@@ -97,14 +97,15 @@ namespace {
       num_bgcolor = Color::BG_DEFAULT;</span>
     }
 
-<span style = "background-color:#dfd">    if (number.state == State::ERASED) {
+<span style = "background-color:#dfd">    if (!number.is_given) {
       num_fgcolor = Color::FG_GREEN;
     } else {
       num_fgcolor = Color::FG_DEFAULT;</span>
     }
 
-<span style = "background-color:#dfd">    if (number.state == State::ERASED &amp;&amp; number.violation != ConstraintViolation::NONE) {
-      num_fgcolor = ResolveViolationColor(number.violation);
+<span style = "background-color:#dfd">    if (!number.is_given &amp;&amp; number.value != static_cast&lt;int&gt;(UNSELECTED) &amp;&amp;</span>
+        number.violation != ConstraintViolation::NONE) {
+<span style = "background-color:#dfd">      num_fgcolor = ResolveViolationColor(number.violation);
       int active_violation_count = 0;
       if (HasViolation(number.violation, ConstraintViolation::ROW)) {
         ++active_violation_count;</span>

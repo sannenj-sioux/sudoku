@@ -86,13 +86,14 @@ void CBlock::print(int cur_point, int highlighted_num) const {
       num_bgcolor = Color::BG_DEFAULT;
     }
 
-    if (number.state == State::ERASED) {
+    if (!number.is_given) {
       num_fgcolor = Color::FG_GREEN;
     } else {
       num_fgcolor = Color::FG_DEFAULT;
     }
 
-    if (number.state == State::ERASED && number.violation != ConstraintViolation::NONE) {
+    if (!number.is_given && number.value != static_cast<int>(UNSELECTED) &&
+        number.violation != ConstraintViolation::NONE) {
       num_fgcolor = ResolveViolationColor(number.violation);
       int active_violation_count = 0;
       if (HasViolation(number.violation, ConstraintViolation::ROW)) {
