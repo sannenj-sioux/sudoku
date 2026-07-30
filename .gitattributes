@@ -1,0 +1,3 @@
+# Keep generated coverage artifacts byte-preserving.
+# This disables EOL normalization so Git will not rewrite line endings.
+coverage/html/** -text

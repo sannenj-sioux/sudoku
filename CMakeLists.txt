@@ -27,13 +27,13 @@ endif()
 
 # set(CMAKE_VERBOSE_MAKEFILE ON) # 开启调试 出现问题时开启
 
-# enable_testing() # 打开测试
+include(CTest)
 
 add_definitions(-DDEBUG) # 相当于代码中 #define DEBUG
 
 SET(EXECUTABLE_OUTPUT_PATH "${PROJECT_SOURCE_DIR}/bin") # 可执行文件输出目录
 
-INCLUDE_DIRECTORIES("${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/src") # 头文件包含目录
+INCLUDE_DIRECTORIES("${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/src" "${PROJECT_SOURCE_DIR}/interfaces") # 头文件包含目录
 
 # 这段代码可以区分操作系统
 MESSAGE("Identifying the OS...")
@@ -55,7 +55,9 @@ endif()
 
 # 添加子目录
 add_subdirectory(src)
-add_subdirectory(tests)
+if(BUILD_TESTING)
+  add_subdirectory(tests)
+endif()
 
 # Visual Studio generators don't emit compile_commands.json directly.
 # Keep a CMake-native refresh target in ALL so clangd DB stays updated with normal builds.
@@ -92,6 +94,55 @@ else()
     COMMAND ${CMAKE_COMMAND} -E echo "clang-uml was not found. Install it first (see install_clang_uml.bat)."
     COMMAND ${CMAKE_COMMAND} -E false
     COMMENT "Cannot generate UML because clang-uml is missing"
+    VERBATIM
+  )
+endif()
+
+# Code coverage generation via OpenCppCoverage (manual build target, Windows).
+if(WIN32)
+  string(REPLACE "/" "\\" PROJECT_SOURCE_DIR_WIN "${PROJECT_SOURCE_DIR}")
+
+  find_program(OPENCPPCOVERAGE_EXE
+    NAMES OpenCppCoverage OpenCppCoverage.exe
+    HINTS
+      "C:/Program Files/OpenCppCoverage"
+      "$ENV{LOCALAPPDATA}/Microsoft/WinGet/Links"
+  )
+
+  if(OPENCPPCOVERAGE_EXE)
+    add_custom_target(generate_coverage
+      COMMAND ${CMAKE_COMMAND} -E remove_directory ${PROJECT_SOURCE_DIR}/coverage/html
+      COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_SOURCE_DIR}/coverage/html
+      COMMAND ${OPENCPPCOVERAGE_EXE}
+        --cover_children
+        --modules "${PROJECT_SOURCE_DIR_WIN}\\bin\\Debug\\*"
+        --sources "${PROJECT_SOURCE_DIR_WIN}\\src\\*"
+        --excluded_sources "*tests*"
+        --excluded_sources "*build*"
+        --export_type "html:${PROJECT_SOURCE_DIR}/coverage/html"
+        --
+        ${CMAKE_CTEST_COMMAND} --test-dir ${PROJECT_BINARY_DIR} -C Debug --output-on-failure
+      WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+      COMMENT "Generating HTML code coverage report with OpenCppCoverage"
+      VERBATIM
+    )
+
+    if(TARGET sudoku_unit_tests)
+      add_dependencies(generate_coverage sudoku_unit_tests)
+    endif()
+  else()
+    add_custom_target(generate_coverage
+      COMMAND ${CMAKE_COMMAND} -E echo "OpenCppCoverage was not found. Install it first (see install_opencppcoverage.bat)."
+      COMMAND ${CMAKE_COMMAND} -E false
+      COMMENT "Cannot generate coverage because OpenCppCoverage is missing"
+      VERBATIM
+    )
+  endif()
+else()
+  add_custom_target(generate_coverage
+    COMMAND ${CMAKE_COMMAND} -E echo "generate_coverage is currently supported on Windows only."
+    COMMAND ${CMAKE_COMMAND} -E false
+    COMMENT "Coverage target is unavailable on this platform"
     VERBATIM
   )
 endif()

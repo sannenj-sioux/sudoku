@@ -31,7 +31,66 @@
       "dependsOn": [
         "CMake: configure",
         "CMake: build"
-      ],
+      ]
+    },
+    {
+      "label": "CTest: unit tests (Debug)",
+      "type": "shell",
+      "command": "ctest --test-dir build -C Debug --output-on-failure",
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
+      "dependsOn": "CMake: configure & build",
+      "problemMatcher": []
+    },
+    {
+      "label": "CTest: unit tests (Release)",
+      "type": "shell",
+      "command": "ctest --test-dir build -C Release --output-on-failure",
+      "group": "test",
+      "dependsOn": "CMake: configure & build",
+      "problemMatcher": []
+    },
+    {
+      "label": "GTest: unit tests (Debug, colored)",
+      "type": "shell",
+      "command": ".\\bin\\Debug\\sudoku_unit_tests.exe --gtest_color=yes",
+      "group": "test",
+      "dependsOn": "CMake: configure & build",
+      "problemMatcher": []
+    },
+    {
+      "label": "GTest: unit tests (Release, colored)",
+      "type": "shell",
+      "command": ".\\bin\\Release\\sudoku_unit_tests.exe --gtest_color=yes",
+      "group": "test",
+      "dependsOn": "CMake: configure & build",
+      "problemMatcher": []
+    },
+    {
+      "label": "GTest: stress test (Debug, shuffled x100)",
+      "type": "shell",
+      "command": ".\\bin\\Debug\\sudoku_unit_tests.exe --gtest_shuffle --gtest_repeat=100 --gtest_color=yes",
+      "group": "test",
+      "dependsOn": "CMake: configure & build",
+      "problemMatcher": []
+    },
+    {
+      "label": "CMake: generate UML",
+      "type": "shell",
+      "command": "cmake --build build --config Release --target generate_uml",
+      "group": "build",
+      "dependsOn": "CMake: configure",
+      "problemMatcher": []
+    },
+    {
+      "label": "CMake: generate coverage (Debug)",
+      "type": "shell",
+      "command": "cmake --build build --config Debug --target generate_coverage",
+      "group": "test",
+      "dependsOn": "CMake: configure",
+      "problemMatcher": []
     }
   ]
 }

@@ -1,11 +1,7 @@
 #include <cstring>
 #include <iostream>
 
-#include "i18n.h"
-#include "input.h"
-#include "scene.h"
-#include "system_env.hpp"
-#include "utility.inl"
+#include "game.h"
 
 static void printHelp() {
   std::cout << '\n';
@@ -17,28 +13,16 @@ static void printHelp() {
 }
 
 int main(int argc, char** argv) {
-  SetSystemEnv();
-
-  CScene scene;
+  Game game;
 
   if (argc == 1) {
-    InputLanguage();
-    int eraseGridNumber = inputDifficulty();
-    scene.generate();
-    scene.eraseRandomGrids(eraseGridNumber);
-  } else if (argc == 3 && (std::strcmp(argv[1], "-l") == 0)) {
-    // load saved game progress
-    if (!scene.load(argv[2])) {
-      Message(I18n::Instance().Get(I18n::Key::LOAD_PROGRESS_FAIL));
-      return 0;
-    }
-    InputLanguage();
-  } else {
-    printHelp();
-    return 0;
+    return game.StartNewGame();
   }
 
-  scene.play();
+  if (argc == 3 && (std::strcmp(argv[1], "-l") == 0)) {
+    return game.LoadGame(argv[2]);
+  }
 
+  printHelp();
   return 0;
 }

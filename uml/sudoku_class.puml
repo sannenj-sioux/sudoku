@@ -57,10 +57,6 @@ class "std::array<point_value_t,CELL_COUNT>" as C_0018329795729824717034
 class C_0018329795729824717034 {
 __
 }
-class "std::vector<CCommand>" as C_0000778261534352271285
-class C_0000778261534352271285 {
-__
-}
 class "std::char_traits<char>" as C_0007500688229146332176
 class C_0007500688229146332176 {
 __
@@ -73,8 +69,16 @@ class "std::string" as C_0005016775666417918015
 class C_0005016775666417918015 {
 __
 }
+class "std::unique_ptr<IScene>" as C_0012919487796137629837
+class C_0012919487796137629837 {
+__
+}
 class "std::map<I18n::Key,std::string>" as C_0017837217748139968203
 class C_0017837217748139968203 {
+__
+}
+class "std::vector<CCommand>" as C_0000778261534352271285
+class C_0000778261534352271285 {
 __
 }
 enum "Color::Code" as C_0006593221852075368801
@@ -117,10 +121,42 @@ __
 -fg : Code
 -md : Code
 }
+class "Board" as C_0010358599209595726571
+class C_0010358599209595726571 {
++Board() : void
++Board(const Board & other) : void
++Board(Board && other) noexcept : void
+..
++operator=(const Board & other) : Board &
++operator=(Board && other) noexcept : Board &
+..
++at(std::size_t index) : point_value_t &
++at(std::size_t index) const : const point_value_t &
++boxBlocks() const : const std::array<std::array<CBlock,BOX_SIZE>,BOX_SIZE> &
++columnBlocks() const : const std::array<CBlock,GRID_SIZE> &
+-rebuildBlocks() : void
++reset() : void
++rowBlocks() const : const std::array<CBlock,GRID_SIZE> &
++size() const : std::size_t
+__
+-box_blocks_ : std::array<std::array<CBlock,BOX_SIZE>,BOX_SIZE>
+-cells_ : std::array<point_value_t,CELL_COUNT>
+-column_blocks_ : std::array<CBlock,GRID_SIZE>
+-row_blocks_ : std::array<CBlock,GRID_SIZE>
+}
+abstract "ISceneCommand" as C_0003672145982083222005
+abstract C_0003672145982083222005 {
++~ISceneCommand() = default : void
+..
+{abstract} +getCurPoint() = 0 : point_t
+{abstract} +setCurValue(int nCurValue, int & nLastValue) = 0 : bool
+{abstract} +setPointValue(const point_t & point, int value) = 0 : bool
+__
+}
 class "CCommand" as C_0001939824123042984499
 class C_0001939824123042984499 {
-+CCommand(CScene * pOwner) : void
-+CCommand(CScene * pOwner, const point_t & point, int preValue, int curValue) : void
++CCommand(ISceneCommand * pOwner) : void
++CCommand(ISceneCommand * pOwner, const point_t & point, int preValue, int curValue) : void
 +CCommand(const CCommand &) : void
 +~CCommand() : void
 ..
@@ -135,39 +171,59 @@ class C_0001939824123042984499 {
 __
 -_nCurValue : int
 -_nPreValue : int
--_pOwner : CScene *
+-_pOwner : ISceneCommand *
 -_stPoint : point_t
 }
-class "CScene" as C_0016294622028327177442
-class C_0016294622028327177442 {
-+CScene(int index = 3) : void
-+~CScene() : void
+abstract "ISceneInput" as C_0001020033492070539152
+abstract C_0001020033492070539152 {
++~ISceneInput() = default : void
 ..
-+eraseRandomGrids(int count) : void
-+generate() : void
-+getCurPoint() : point_t
--init() : void
-+isComplete() : bool
-+load(const char * filename) : bool
-+play() : void
--printUnderline(int line_no = -1) const : void
-+save(const char * filename) : bool
-+setCurValue(int nCurValue, int & nLastValue) : bool
-+setPointValue(const point_t &, int) : bool
--setValue(int) : void
--setValue(const point_t &, int) : void
-+show() const : void
+{abstract} +ReadKey() = 0 : char
+{abstract} +ReadToken() = 0 : std::string
+{abstract} +WaitForKey() = 0 : void
 __
-{static} -BOX_SIZE : const int
-{static} -CELL_COUNT : const int
-{static} -GRID_SIZE : const int
--_column_block : std::array<CBlock,GRID_SIZE>
--_cur_point : point_t
--_map : std::array<point_value_t,CELL_COUNT>
--_max_column : int
--_row_block : std::array<CBlock,GRID_SIZE>
--_vCommand : std::vector<CCommand>
--_xy_block : std::array<std::array<CBlock,BOX_SIZE>,BOX_SIZE>
+}
+class "ConsoleSceneInput" as C_0001864987365890753102
+class C_0001864987365890753102 {
++ReadKey() : char
++ReadToken() : std::string
++WaitForKey() : void
+__
+}
+abstract "ISceneRenderer" as C_0001520815362468646651
+abstract C_0001520815362468646651 {
++~ISceneRenderer() = default : void
+..
+{abstract} +Render(const Board & board, const point_t & cursor_point, int max_column) const = 0 : void
+{abstract} +RenderMessage(const std::string & message, bool add_line_feed = true) const = 0 : void
+__
+}
+class "ConsoleSceneRenderer" as C_0016033247716073167769
+class C_0016033247716073167769 {
++Render(const Board & board, const point_t & cursor_point, int max_column) const : void
++RenderMessage(const std::string & message, bool add_line_feed = true) const : void
+__
+}
+abstract "IScene" as C_0015617259604497845660
+abstract C_0015617259604497845660 {
++~IScene() = default : void
+..
+{abstract} +eraseRandomGrids(int count) = 0 : void
+{abstract} +generate() = 0 : void
+{abstract} +isComplete() = 0 : bool
+{abstract} +load(const char * filename) = 0 : bool
+{abstract} +play() = 0 : void
+{abstract} +save(const char * filename) = 0 : bool
+__
+}
+class "Game" as C_0013071880978633431303
+class C_0013071880978633431303 {
++Game() : void
+..
++LoadGame(const char * progress_file_path) : int
++StartNewGame() : int
+__
+-scene_ : std::unique_ptr<IScene>
 }
 enum "Language" as C_0017280194170740603963
 enum C_0017280194170740603963 {
@@ -199,6 +255,47 @@ CONGRATULATION
 NOT_COMPLETED
 ASK_DIFFICULTY
 }
+abstract "IPuzzleGenerator" as C_0016672642425954744173
+abstract C_0016672642425954744173 {
++~IPuzzleGenerator() = default : void
+..
+{abstract} +EraseCells(Board & board, int count) = 0 : void
+{abstract} +GenerateSolvedBoard(Board & board) = 0 : void
+__
+}
+class "CScene" as C_0016294622028327177442
+class C_0016294622028327177442 {
++CScene(int index = 3, IPuzzleGenerator * puzzle_generator = nullptr, const ISceneRenderer * scene_renderer = nullptr, ISceneInput * scene_input = nullptr) : void
++~CScene() : void
+..
++eraseRandomGrids(int count) : void
++generate() : void
++getCurPoint() : point_t
+-init() : void
++isComplete() : bool
++load(const char * filename) : bool
++play() : void
++save(const char * filename) : bool
++setCurValue(int nCurValue, int & nLastValue) : bool
++setPointValue(const point_t & point, int value) : bool
+-setValue(int) : void
+-setValue(const point_t &, int) : void
+#show() const : void
+__
+-_board : Board
+-_cur_point : point_t
+-_max_column : int
+-_puzzle_generator : IPuzzleGenerator *
+-_scene_input : ISceneInput *
+-_scene_renderer : const ISceneRenderer *
+-_vCommand : std::vector<CCommand>
+}
+class "PuzzleGenerator" as C_0006892644601187283994
+class C_0006892644601187283994 {
++EraseCells(Board & board, int count) : void
++GenerateSolvedBoard(Board & board) : void
+__
+}
 C_0012873921550621665616 o-- C_0012548033600169640822 : +state
 C_0006420790171117861728 ..> C_0006605295246263958522
 C_0004259552449989326327 --> "9" C_0012873921550621665616 : -_numbers
@@ -206,26 +303,50 @@ C_0014472408112623384711 ..> C_0004259552449989326327
 C_0008981651403036664032 ..> C_0004259552449989326327
 C_0000368322549962654847 ..> C_0008981651403036664032
 C_0018329795729824717034 ..> C_0012873921550621665616
-C_0000778261534352271285 ..> C_0001939824123042984499
 C_0005016775666417918015 ..> C_0007500688229146332176
 C_0005016775666417918015 ..> C_0000465838628272370621
+C_0012919487796137629837 ..> C_0015617259604497845660
 C_0017837217748139968203 ..> C_0005016775666417918015
+C_0000778261534352271285 ..> C_0001939824123042984499
 C_0010533272728017906629 o-- C_0006593221852075368801 : -md
 C_0010533272728017906629 o-- C_0006593221852075368801 : -bg
 C_0010533272728017906629 o-- C_0006593221852075368801 : -fg
-C_0001939824123042984499 --> C_0016294622028327177442 : -_pOwner
+C_0010358599209595726571 ..> C_0012873921550621665616
+C_0010358599209595726571 ..> C_0004259552449989326327
+C_0010358599209595726571 o-- C_0018329795729824717034 : -cells_
+C_0010358599209595726571 o-- C_0014472408112623384711 : -row_blocks_
+C_0010358599209595726571 o-- C_0014472408112623384711 : -column_blocks_
+C_0010358599209595726571 o-- C_0000368322549962654847 : -box_blocks_
+C_0003672145982083222005 ..> C_0006605295246263958522
+C_0001939824123042984499 --> C_0003672145982083222005 : -_pOwner
 C_0001939824123042984499 o-- C_0006605295246263958522 : -_stPoint
-C_0016294622028327177442 o-- C_0006605295246263958522 : -_cur_point
-C_0016294622028327177442 o-- C_0014472408112623384711 : -_column_block
-C_0016294622028327177442 o-- C_0014472408112623384711 : -_row_block
-C_0016294622028327177442 o-- C_0000368322549962654847 : -_xy_block
-C_0016294622028327177442 o-- C_0018329795729824717034 : -_map
-C_0016294622028327177442 o-- C_0000778261534352271285 : -_vCommand
+C_0001020033492070539152 ..> C_0005016775666417918015
+C_0001864987365890753102 ..> C_0005016775666417918015
+C_0001020033492070539152 <|-- C_0001864987365890753102
+C_0001520815362468646651 ..> C_0010358599209595726571
+C_0001520815362468646651 ..> C_0006605295246263958522
+C_0001520815362468646651 ..> C_0005016775666417918015
+C_0016033247716073167769 ..> C_0010358599209595726571
+C_0016033247716073167769 ..> C_0006605295246263958522
+C_0016033247716073167769 ..> C_0005016775666417918015
+C_0001520815362468646651 <|-- C_0016033247716073167769
+C_0013071880978633431303 o-- C_0012919487796137629837 : -scene_
 C_0006098803878144246881 ..> C_0017280194170740603963
 C_0006098803878144246881 ..> C_0005016775666417918015
 C_0006098803878144246881 --> C_0017837217748139968203 : -dict_
 C_0006098803878144246881 --> C_0005470317071970115398 : -dict_
 C_0005470317071970115398 --+ C_0006098803878144246881
+C_0016672642425954744173 ..> C_0010358599209595726571
+C_0016294622028327177442 o-- C_0006605295246263958522 : -_cur_point
+C_0016294622028327177442 o-- C_0010358599209595726571 : -_board
+C_0016294622028327177442 --> C_0016672642425954744173 : -_puzzle_generator
+C_0016294622028327177442 --> C_0001520815362468646651 : -_scene_renderer
+C_0016294622028327177442 --> C_0001020033492070539152 : -_scene_input
+C_0016294622028327177442 o-- C_0000778261534352271285 : -_vCommand
+C_0015617259604497845660 <|-- C_0016294622028327177442
+C_0003672145982083222005 <|-- C_0016294622028327177442
+C_0006892644601187283994 ..> C_0010358599209595726571
+C_0016672642425954744173 <|-- C_0006892644601187283994
 
 'Generated with clang-uml, version 0.6.2
 'LLVM version clang version 20.1.7 (https://github.com/llvm/llvm-project.git 6146a88f60492b520a36f8f8f3231e15f3cc6082)

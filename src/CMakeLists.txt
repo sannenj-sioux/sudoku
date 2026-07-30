@@ -2,10 +2,15 @@
 
 # Manually specify source files
 set(SOURCE_FILES
+    board.cpp
     block.cpp
+    console_scene_input.cpp
+    console_scene_renderer.cpp
     command.cpp
+    game.cpp
     i18n.cpp
     input.cpp
+    puzzle_generator.cpp
     scene.cpp
     main.cpp
 )

@@ -1,8 +1,10 @@
 #include <algorithm>
 #include <chrono>
 #include <iostream>
+#include <memory>
 #include <vector>
 
+#include "i_scene.h"
 #include "scene.h"
 
 using namespace std;
@@ -15,10 +17,10 @@ void test_generate_performance() {
   const int iterations = 100;
 
   for (int i = 0; i < iterations; ++i) {
-    CScene scene;
+    std::unique_ptr<IScene> scene = std::make_unique<CScene>();
 
     auto start = high_resolution_clock::now();
-    scene.generate();
+    scene->generate();
     auto end = high_resolution_clock::now();
 
     duration<double, milli> duration = end - start;
@@ -51,21 +53,21 @@ void test_generate_performance() {
 void test_erase_performance() {
   cout << "=== Random Erase Performance Test ===" << endl;
 
-  CScene scene;
-  scene.generate();
+  std::unique_ptr<IScene> scene = std::make_unique<CScene>();
+  scene->generate();
 
   vector<int> difficulty_levels = {30, 40, 50, 60, 70};
 
   for (int level : difficulty_levels) {
     auto start = high_resolution_clock::now();
-    scene.eraseRandomGrids(level);
+    scene->eraseRandomGrids(level);
     auto end = high_resolution_clock::now();
 
     duration<double, milli> duration = end - start;
     cout << "Erased " << level << " cells, time: " << duration.count() << " ms" << endl;
 
     // Regenerate board for next test
-    scene.generate();
+    scene->generate();
   }
   cout << endl;
 }
@@ -73,15 +75,15 @@ void test_erase_performance() {
 void test_complete_check_performance() {
   cout << "=== Completion Check Performance Test ===" << endl;
 
-  CScene scene;
-  scene.generate();
+  std::unique_ptr<IScene> scene = std::make_unique<CScene>();
+  scene->generate();
 
   vector<double> times;
   const int iterations = 1000;
 
   for (int i = 0; i < iterations; ++i) {
     auto start = high_resolution_clock::now();
-    scene.isComplete();
+    scene->isComplete();
     auto end = high_resolution_clock::now();
 
     duration<double, nano> duration = end - start;
