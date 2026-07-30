@@ -1,4 +1,4 @@
-[2026-07-29 16:34:35] [info] Start Program:
+[2026-07-30 13:57:14] [info] Start Program:
 Path:"C:/Program Files/CMake/bin/ctest.exe"
 Arguments:--test-dir D:/CustomerWorkspaces/SuSS/Training/Case/build -C Debug --output-on-failure 
 Working directory: not set.
@@ -14,36 +14,58 @@ Input coverage:
 Unified diff: 
 Excluded line regular expressions: 
 Substitute pdb source paths: 
-[2026-07-29 16:34:35] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
-[2026-07-29 16:34:35] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
-[2026-07-29 16:34:35] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
-[2026-07-29 16:34:35] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
-[2026-07-29 16:34:35] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
-[2026-07-29 16:34:36] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
-[2026-07-29 16:34:36] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
-[2026-07-29 16:34:36] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
-[2026-07-29 16:34:36] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
-[2026-07-29 16:34:36] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
-[2026-07-29 16:34:36] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
-[2026-07-29 16:34:36] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
-[2026-07-29 16:34:36] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
-[2026-07-29 16:34:36] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
-[2026-07-29 16:34:36] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
-[2026-07-29 16:34:36] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
-[2026-07-29 16:34:36] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
-[2026-07-29 16:34:36] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
-[2026-07-29 16:34:37] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
-[2026-07-29 16:34:37] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
-[2026-07-29 16:34:37] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
-[2026-07-29 16:34:37] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
-[2026-07-29 16:34:37] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
-[2026-07-29 16:34:37] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
-[2026-07-29 16:34:37] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
-[2026-07-29 16:34:37] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
-[2026-07-29 16:34:37] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
-[2026-07-29 16:34:37] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
-[2026-07-29 16:34:37] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
-[2026-07-29 16:34:37] [info] ----------------------------------------------------
-[2026-07-29 16:34:37] [info] Coverage generated in Folder D:\CustomerWorkspaces\SuSS\Training\Case\coverage\html
-[2026-07-29 16:34:37] [info] ----------------------------------------------------
-[2026-07-29 16:34:37] [info] The code coverage report is not what you expect? See the FAQ https://github.com/OpenCppCoverage/OpenCppCoverage/wiki/FAQ.
+[2026-07-30 13:57:14] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
+[2026-07-30 13:57:14] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
+[2026-07-30 13:57:14] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
+[2026-07-30 13:57:15] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
+[2026-07-30 13:57:15] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
+[2026-07-30 13:57:15] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
+[2026-07-30 13:57:15] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
+[2026-07-30 13:57:15] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
+[2026-07-30 13:57:15] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
+[2026-07-30 13:57:15] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
+[2026-07-30 13:57:15] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
+[2026-07-30 13:57:15] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
+[2026-07-30 13:57:15] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
+[2026-07-30 13:57:15] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
+[2026-07-30 13:57:15] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
+[2026-07-30 13:57:15] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
+[2026-07-30 13:57:16] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
+[2026-07-30 13:57:16] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
+[2026-07-30 13:57:16] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
+[2026-07-30 13:57:16] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
+[2026-07-30 13:57:16] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
+[2026-07-30 13:57:16] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
+[2026-07-30 13:57:16] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
+[2026-07-30 13:57:16] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
+[2026-07-30 13:57:16] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
+[2026-07-30 13:57:16] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
+[2026-07-30 13:57:17] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
+[2026-07-30 13:57:17] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
+[2026-07-30 13:57:17] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
+[2026-07-30 13:57:17] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
+[2026-07-30 13:57:17] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
+[2026-07-30 13:57:17] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
+[2026-07-30 13:57:17] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
+[2026-07-30 13:57:17] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
+[2026-07-30 13:57:17] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
+[2026-07-30 13:57:17] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
+[2026-07-30 13:57:17] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
+[2026-07-30 13:57:17] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
+[2026-07-30 13:57:18] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
+[2026-07-30 13:57:18] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
+[2026-07-30 13:57:18] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
+[2026-07-30 13:57:18] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
+[2026-07-30 13:57:18] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
+[2026-07-30 13:57:18] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
+[2026-07-30 13:57:18] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
+[2026-07-30 13:57:18] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
+[2026-07-30 13:57:18] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
+[2026-07-30 13:57:18] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
+[2026-07-30 13:57:18] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
+[2026-07-30 13:57:18] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
+[2026-07-30 13:57:19] [info] Module: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\sudoku_unit_tests.exe is selected because it matches selected pattern: D:\CustomerWorkspaces\SuSS\Training\Case\bin\Debug\*
+[2026-07-30 13:57:19] [info] ----------------------------------------------------
+[2026-07-30 13:57:19] [info] Coverage generated in Folder D:\CustomerWorkspaces\SuSS\Training\Case\coverage\html
+[2026-07-30 13:57:19] [info] ----------------------------------------------------
+[2026-07-30 13:57:19] [info] The code coverage report is not what you expect? See the FAQ https://github.com/OpenCppCoverage/OpenCppCoverage/wiki/FAQ.

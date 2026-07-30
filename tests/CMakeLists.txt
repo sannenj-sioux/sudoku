@@ -61,6 +61,8 @@ set(UNIT_TEST_FILES
     ../src/input.cpp
     ../src/puzzle_generator.cpp
     ../src/scene.cpp
+    block_render_test.cpp
+    board_validation_state_test.cpp
     puzzle_generation_test.cpp
     scene_test.cpp
 )

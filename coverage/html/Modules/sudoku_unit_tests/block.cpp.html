@@ -19,6 +19,29 @@
 #include "common.h"
 #include "display_symbol.h"
 
+namespace {
+<span style = "background-color:#dfd">Color::Code ResolveViolationColor(ConstraintViolation violation) {
+  const bool row = HasViolation(violation, ConstraintViolation::ROW);
+  const bool column = HasViolation(violation, ConstraintViolation::COLUMN);
+  const bool box = HasViolation(violation, ConstraintViolation::BOX);
+  const int active_count = static_cast&lt;int&gt;(row) + static_cast&lt;int&gt;(column) + static_cast&lt;int&gt;(box);</span>
+
+<span style = "background-color:#dfd">  if (active_count &gt; 1) {
+    return Color::FG_WHITE;</span>
+  }
+<span style = "background-color:#dfd">  if (row) {
+    return Color::FG_LIGHT_RED;</span>
+  }
+<span style = "background-color:#dfd">  if (column) {
+    return Color::FG_LIGHT_CYAN;</span>
+  }
+<span style = "background-color:#dfd">  if (box) {
+    return Color::FG_LIGHT_MAGENTA;</span>
+  }
+<span style = "background-color:#dfd">  return Color::FG_DEFAULT;
+}</span>
+}  // namespace
+
 <span style = "background-color:#dfd">CBlock::CBlock() : _count(0) {}</span>
 
 <span style = "background-color:#dfd">bool CBlock::isValid() const {
@@ -26,8 +49,8 @@
 
 <span style = "background-color:#dfd">  for (int i = 0; i &lt; _count - 1; ++i) {
     for (int j = i + 1; j &lt; _count; ++j) {
-      if (UNSELECTED == _numbers[i]-&gt;value || UNSELECTED == _numbers[j]-&gt;value) {</span>
-<span style = "background-color:#fdd">        continue;</span>
+      if (UNSELECTED == _numbers[i]-&gt;value || UNSELECTED == _numbers[j]-&gt;value) {
+        continue;</span>
       }
 
 <span style = "background-color:#dfd">      if (_numbers[i]-&gt;value == _numbers[j]-&gt;value) {
@@ -42,52 +65,70 @@
 <span style = "background-color:#dfd">bool CBlock::isFull() const {
   for (int i = 0; i &lt; _count; ++i) {
     point_value_t* p_point_value = _numbers[i];
-    if (nullptr == p_point_value || UNSELECTED == p_point_value-&gt;value) {</span>
-<span style = "background-color:#fdd">      return false;</span>
+    if (nullptr == p_point_value || UNSELECTED == p_point_value-&gt;value) {
+      return false;</span>
     }
 <span style = "background-color:#dfd">  }
   return true;
 }</span>
 
-<span style = "background-color:#fdd">void CBlock::print(int cur_point, int highlighted_num) const {
+<span style = "background-color:#dfd">void CBlock::print(int cur_point, int highlighted_num) const {
   std::cout &lt;&lt; Color::Modifier(Color::BOLD, Color::BG_DEFAULT, Color::FG_RED) &lt;&lt; PIPE</span>
             &lt;&lt; Color::Modifier() &lt;&lt; " ";
-<span style = "background-color:#fdd">  for (int i = 0; i &lt; _count; ++i) {
+<span style = "background-color:#dfd">  for (int i = 0; i &lt; _count; ++i) {
     auto number = *(_numbers[i]);</span>
     Color::Code pipe_color;
     Color::Code num_bgcolor;
     Color::Code num_fgcolor;
-<span style = "background-color:#fdd">    std::string num = " ";</span>
+<span style = "background-color:#dfd">    std::string num = " ";</span>
 
-<span style = "background-color:#fdd">    if ((i + 1) % 3 == 0) {
+<span style = "background-color:#dfd">    if ((i + 1) % 3 == 0) {
       pipe_color = Color::FG_RED;
     } else {
       pipe_color = Color::FG_DEFAULT;</span>
     }
 
-<span style = "background-color:#fdd">    if (i == cur_point) {
+<span style = "background-color:#dfd">    if (i == cur_point) {
       num_bgcolor = Color::BG_BLUE;
     } else if (highlighted_num != UNSELECTED &amp;&amp; number.value == highlighted_num) {
       num_bgcolor =</span>
           Color::BG_YELLOW;  // Highlight numbers matching the current cursor value in yellow
-<span style = "background-color:#fdd">    } else {
+<span style = "background-color:#dfd">    } else {
       num_bgcolor = Color::BG_DEFAULT;</span>
     }
 
-<span style = "background-color:#fdd">    if (number.state == State::ERASED) {
+<span style = "background-color:#dfd">    if (number.state == State::ERASED) {
       num_fgcolor = Color::FG_GREEN;
     } else {
       num_fgcolor = Color::FG_DEFAULT;</span>
     }
 
-<span style = "background-color:#fdd">    if (number.value != 0) {
+<span style = "background-color:#dfd">    if (number.state == State::ERASED &amp;&amp; number.violation != ConstraintViolation::NONE) {
+      num_fgcolor = ResolveViolationColor(number.violation);
+      int active_violation_count = 0;
+      if (HasViolation(number.violation, ConstraintViolation::ROW)) {
+        ++active_violation_count;</span>
+      }
+<span style = "background-color:#dfd">      if (HasViolation(number.violation, ConstraintViolation::COLUMN)) {
+        ++active_violation_count;</span>
+      }
+<span style = "background-color:#dfd">      if (HasViolation(number.violation, ConstraintViolation::BOX)) {
+        ++active_violation_count;</span>
+      }
+<span style = "background-color:#dfd">      const bool is_multi_violation = active_violation_count &gt; 1;
+      if (is_multi_violation &amp;&amp; num_bgcolor == Color::BG_DEFAULT) {
+        num_bgcolor = Color::BG_RED;</span>
+      }
+    }
+
+<span style = "background-color:#dfd">    if (number.value != 0) {
       num = std::to_string(number.value);</span>
     }
 
-<span style = "background-color:#fdd">    std::cout &lt;&lt; Color::Modifier(Color::BOLD, num_bgcolor, num_fgcolor) &lt;&lt; num &lt;&lt; Color::Modifier()</span>
+<span style = "background-color:#dfd">    std::cout &lt;&lt; Color::Modifier(Color::BOLD, num_bgcolor, num_fgcolor) &lt;&lt; num &lt;&lt; Color::Modifier()</span>
               &lt;&lt; " " &lt;&lt; Color::Modifier(Color::BOLD, Color::BG_DEFAULT, pipe_color) &lt;&lt; PIPE
               &lt;&lt; Color::Modifier() &lt;&lt; " ";
-<span style = "background-color:#fdd">  }
+<span style = "background-color:#dfd">  }
   std::cout &lt;&lt; std::endl;
 }</span>
 
@@ -96,11 +137,11 @@
   _numbers[_count++] = point;
 }</span>
 
-<span style = "background-color:#fdd">int CBlock::getNumberValue(int index) const {
+<span style = "background-color:#dfd">int CBlock::getNumberValue(int index) const {
   if (index &gt;= 0 &amp;&amp; index &lt; _count) {
     return _numbers[index]-&gt;value;</span>
   }
-<span style = "background-color:#fdd">  return UNSELECTED;  // Or throw an exception
+<span style = "background-color:#dfd">  return UNSELECTED;  // Or throw an exception
 }</span></pre>
         <hr />
         <table width="100%">

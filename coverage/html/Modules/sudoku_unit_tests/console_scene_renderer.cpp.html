@@ -62,8 +62,25 @@ namespace {
       block.print(-1, highlighted_num);</span>
     }
 <span style = "background-color:#fdd">    PrintUnderline(cursor_point, max_column, row);
+  }</span>
+
+<span style = "background-color:#fdd">  if (board.isValidState()) {
+    std::cout &lt;&lt; Color::Modifier(Color::BOLD, Color::BG_DEFAULT, Color::FG_LIGHT_GREEN)</span>
+              &lt;&lt; "Board status: " &lt;&lt; board.validationState().Message() &lt;&lt; Color::Modifier() &lt;&lt; '\n';
+<span style = "background-color:#fdd">  } else {
+    std::cout &lt;&lt; Color::Modifier(Color::BOLD, Color::BG_DEFAULT, Color::FG_LIGHT_RED)</span>
+              &lt;&lt; "Board status: " &lt;&lt; board.validationState().Message() &lt;&lt; Color::Modifier() &lt;&lt; '\n';
+<span style = "background-color:#fdd">    std::cout &lt;&lt; "Violation colors -&gt; "</span>
+              &lt;&lt; Color::Modifier(Color::BOLD, Color::BG_DEFAULT, Color::FG_LIGHT_RED) &lt;&lt; "row"
+              &lt;&lt; Color::Modifier() &lt;&lt; ", "
+              &lt;&lt; Color::Modifier(Color::BOLD, Color::BG_DEFAULT, Color::FG_LIGHT_CYAN) &lt;&lt; "column"
+              &lt;&lt; Color::Modifier() &lt;&lt; ", "
+              &lt;&lt; Color::Modifier(Color::BOLD, Color::BG_DEFAULT, Color::FG_LIGHT_MAGENTA) &lt;&lt; "box"
+              &lt;&lt; Color::Modifier() &lt;&lt; ", "
+              &lt;&lt; Color::Modifier(Color::BOLD, Color::BG_RED, Color::FG_WHITE) &lt;&lt; "multiple"
+              &lt;&lt; Color::Modifier() &lt;&lt; '\n';
   }
-}</span>
+<span style = "background-color:#fdd">}</span>
 
 <span style = "background-color:#fdd">void ConsoleSceneRenderer::RenderMessage(const std::string&amp; message, bool add_line_feed) const {
   std::cout &lt;&lt; message;

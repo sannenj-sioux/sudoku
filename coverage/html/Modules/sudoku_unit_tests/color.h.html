@@ -52,7 +52,7 @@ class Modifier {
   Code md, bg, fg;
 
  public:
-<span style = "background-color:#fdd">  Modifier() : md(Color::RESET), bg(Color::BG_DEFAULT), fg(Color::FG_DEFAULT) {}
+<span style = "background-color:#dfd">  Modifier() : md(Color::RESET), bg(Color::BG_DEFAULT), fg(Color::FG_DEFAULT) {}
   Modifier(Code Mode, Code BackGround, Code FrontGround)
       : md(Mode), bg(BackGround), fg(FrontGround) {}
   friend std::ostream&amp; operator&lt;&lt;(std::ostream&amp; output_stream, const Modifier&amp; mod) {

@@ -132,7 +132,7 @@ namespace {
     const auto random_index =</span>
         static_cast&lt;std::size_t&gt;(RandomInt(0, static_cast&lt;int&gt;(cell_indexes.size() - 1)));
 <span style = "background-color:#dfd">    board.at(static_cast&lt;std::size_t&gt;(cell_indexes.at(random_index))) =</span>
-        {static_cast&lt;int&gt;(UNSELECTED), State::ERASED};
+      {static_cast&lt;int&gt;(UNSELECTED), State::ERASED, ConstraintViolation::NONE};
 <span style = "background-color:#dfd">    cell_indexes.erase(cell_indexes.begin() +</span>
                        static_cast&lt;std::vector&lt;int&gt;::difference_type&gt;(random_index));
 <span style = "background-color:#dfd">  }

@@ -11,7 +11,16 @@
         <pre class="prettyprint lang-cpp linenums">
 #include "board.h"
 
+#include &lt;array&gt;
 #include &lt;utility&gt;
+
+namespace {
+constexpr int kUntrackedValue = -1;
+
+<span style = "background-color:#dfd">void MarkCellViolation(point_value_t&amp; cell, ConstraintViolation violation) {
+  cell.violation |= violation;
+}</span>
+}  // namespace
 
 <span style = "background-color:#dfd">Board::Board() {
   reset();
@@ -19,31 +28,36 @@
 
 <span style = "background-color:#dfd">Board::Board(const Board&amp; other) : cells_(other.cells_) {
   rebuildBlocks();
+  refreshValidationState();
 }</span>
 
-<span style = "background-color:#fdd">Board&amp; Board::operator=(const Board&amp; other) {
+<span style = "background-color:#dfd">Board&amp; Board::operator=(const Board&amp; other) {
   if (this != &amp;other) {
     cells_ = other.cells_;
-    rebuildBlocks();</span>
+    rebuildBlocks();
+    refreshValidationState();</span>
   }
-<span style = "background-color:#fdd">  return *this;
+<span style = "background-color:#dfd">  return *this;
 }</span>
 
-<span style = "background-color:#fdd">Board::Board(Board&amp;&amp; other) noexcept : cells_(std::move(other.cells_)) {
+<span style = "background-color:#dfd">Board::Board(Board&amp;&amp; other) noexcept : cells_(std::move(other.cells_)) {
   rebuildBlocks();
+  refreshValidationState();
 }</span>
 
-<span style = "background-color:#fdd">Board&amp; Board::operator=(Board&amp;&amp; other) noexcept {
+<span style = "background-color:#dfd">Board&amp; Board::operator=(Board&amp;&amp; other) noexcept {
   if (this != &amp;other) {
     cells_ = std::move(other.cells_);
-    rebuildBlocks();</span>
+    rebuildBlocks();
+    refreshValidationState();</span>
   }
-<span style = "background-color:#fdd">  return *this;
+<span style = "background-color:#dfd">  return *this;
 }</span>
 
 <span style = "background-color:#dfd">void Board::reset() {
-  cells_.fill({static_cast&lt;int&gt;(UNSELECTED), State::INITED});
+  cells_.fill({static_cast&lt;int&gt;(UNSELECTED), State::INITED, ConstraintViolation::NONE});
   rebuildBlocks();
+  refreshValidationState();
 }</span>
 
 <span style = "background-color:#dfd">point_value_t&amp; Board::at(std::size_t index) {
@@ -68,6 +82,122 @@
 
 <span style = "background-color:#dfd">const std::array&lt;std::array&lt;CBlock, BOX_SIZE&gt;, BOX_SIZE&gt;&amp; Board::boxBlocks() const {
   return box_blocks_;
+}</span>
+
+<span style = "background-color:#dfd">void Board::refreshValidationState() {
+  for (point_value_t&amp; cell : cells_) {
+    cell.violation = ConstraintViolation::NONE;
+  }</span>
+
+<span style = "background-color:#dfd">  bool has_row_violation = false;
+  bool has_column_violation = false;
+  bool has_box_violation = false;</span>
+
+<span style = "background-color:#dfd">  for (int row = 0; row &lt; GRID_SIZE; ++row) {</span>
+    std::array&lt;int, GRID_SIZE + 1&gt; first_index_by_value;
+<span style = "background-color:#dfd">    first_index_by_value.fill(kUntrackedValue);</span>
+
+<span style = "background-color:#dfd">    for (int column = 0; column &lt; GRID_SIZE; ++column) {
+      const auto index =</span>
+          (static_cast&lt;std::size_t&gt;(row) * static_cast&lt;std::size_t&gt;(GRID_SIZE)) +
+          static_cast&lt;std::size_t&gt;(column);
+<span style = "background-color:#dfd">      const int value = cells_.at(index).value;
+      if (value &lt; 1 || value &gt; GRID_SIZE) {
+        continue;</span>
+      }
+
+<span style = "background-color:#dfd">      int&amp; first_index = first_index_by_value.at(static_cast&lt;std::size_t&gt;(value));
+      if (first_index == kUntrackedValue) {
+        first_index = static_cast&lt;int&gt;(index);
+        continue;</span>
+      }
+
+<span style = "background-color:#dfd">      has_row_violation = true;
+      MarkCellViolation(cells_.at(static_cast&lt;std::size_t&gt;(first_index)), ConstraintViolation::ROW);
+      MarkCellViolation(cells_.at(index), ConstraintViolation::ROW);
+    }
+  }</span>
+
+<span style = "background-color:#dfd">  for (int column = 0; column &lt; GRID_SIZE; ++column) {</span>
+    std::array&lt;int, GRID_SIZE + 1&gt; first_index_by_value;
+<span style = "background-color:#dfd">    first_index_by_value.fill(kUntrackedValue);</span>
+
+<span style = "background-color:#dfd">    for (int row = 0; row &lt; GRID_SIZE; ++row) {
+      const auto index =</span>
+          (static_cast&lt;std::size_t&gt;(row) * static_cast&lt;std::size_t&gt;(GRID_SIZE)) +
+          static_cast&lt;std::size_t&gt;(column);
+<span style = "background-color:#dfd">      const int value = cells_.at(index).value;
+      if (value &lt; 1 || value &gt; GRID_SIZE) {
+        continue;</span>
+      }
+
+<span style = "background-color:#dfd">      int&amp; first_index = first_index_by_value.at(static_cast&lt;std::size_t&gt;(value));
+      if (first_index == kUntrackedValue) {
+        first_index = static_cast&lt;int&gt;(index);
+        continue;</span>
+      }
+
+<span style = "background-color:#dfd">      has_column_violation = true;
+      MarkCellViolation(cells_.at(static_cast&lt;std::size_t&gt;(first_index)), ConstraintViolation::COLUMN);
+      MarkCellViolation(cells_.at(index), ConstraintViolation::COLUMN);
+    }
+  }</span>
+
+<span style = "background-color:#dfd">  for (int box_row = 0; box_row &lt; BOX_SIZE; ++box_row) {
+    for (int box_column = 0; box_column &lt; BOX_SIZE; ++box_column) {</span>
+      std::array&lt;int, GRID_SIZE + 1&gt; first_index_by_value;
+<span style = "background-color:#dfd">      first_index_by_value.fill(kUntrackedValue);</span>
+
+<span style = "background-color:#dfd">      const int start_row = box_row * BOX_SIZE;
+      const int start_column = box_column * BOX_SIZE;
+      for (int row = start_row; row &lt; start_row + BOX_SIZE; ++row) {
+        for (int column = start_column; column &lt; start_column + BOX_SIZE; ++column) {
+          const auto index =</span>
+              (static_cast&lt;std::size_t&gt;(row) * static_cast&lt;std::size_t&gt;(GRID_SIZE)) +
+              static_cast&lt;std::size_t&gt;(column);
+<span style = "background-color:#dfd">          const int value = cells_.at(index).value;
+          if (value &lt; 1 || value &gt; GRID_SIZE) {
+            continue;</span>
+          }
+
+<span style = "background-color:#dfd">          int&amp; first_index = first_index_by_value.at(static_cast&lt;std::size_t&gt;(value));
+          if (first_index == kUntrackedValue) {
+            first_index = static_cast&lt;int&gt;(index);
+            continue;</span>
+          }
+
+<span style = "background-color:#dfd">          has_box_violation = true;
+          MarkCellViolation(cells_.at(static_cast&lt;std::size_t&gt;(first_index)), ConstraintViolation::BOX);
+          MarkCellViolation(cells_.at(index), ConstraintViolation::BOX);
+        }
+      }
+    }
+  }</span>
+
+<span style = "background-color:#dfd">  violation_summary_ = ConstraintViolation::NONE;
+  if (has_row_violation) {
+    violation_summary_ |= ConstraintViolation::ROW;</span>
+  }
+<span style = "background-color:#dfd">  if (has_column_violation) {
+    violation_summary_ |= ConstraintViolation::COLUMN;</span>
+  }
+<span style = "background-color:#dfd">  if (has_box_violation) {
+    violation_summary_ |= ConstraintViolation::BOX;</span>
+  }
+
+<span style = "background-color:#dfd">  validation_state_ = CreateBoardValidationState(violation_summary_);
+}</span>
+
+<span style = "background-color:#dfd">bool Board::isValidState() const {
+  return validation_state_-&gt;IsValid();
+}</span>
+
+<span style = "background-color:#dfd">ConstraintViolation Board::violationSummary() const {
+  return violation_summary_;
+}</span>
+
+<span style = "background-color:#dfd">const BoardValidationState&amp; Board::validationState() const {
+  return *validation_state_;
 }</span>
 
 <span style = "background-color:#dfd">void Board::rebuildBlocks() {

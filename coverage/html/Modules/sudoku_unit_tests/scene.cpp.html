@@ -64,6 +64,7 @@ CScene::CScene(int index, IPuzzleGenerator* puzzle_generator, const ISceneRender
 <span style = "background-color:#dfd">void CScene::setValue(const point_t&amp; point, int value) {
   const auto index = static_cast&lt;size_t&gt;(point.x) + (static_cast&lt;size_t&gt;(point.y) * GRID_SIZE);
   _board.at(index).value = value;
+  _board.refreshValidationState();
 }</span>
 
 <span style = "background-color:#dfd">void CScene::setValue(int value) {
@@ -73,10 +74,17 @@ CScene::CScene(int index, IPuzzleGenerator* puzzle_generator, const ISceneRender
 
 <span style = "background-color:#dfd">void CScene::eraseRandomGrids(int count) {
   _puzzle_generator-&gt;EraseCells(_board, count);
+  _board.refreshValidationState();
 }</span>
 
 <span style = "background-color:#dfd">bool CScene::isComplete() {
-  const auto&amp; row_blocks = _board.rowBlocks();
+  _board.refreshValidationState();</span>
+
+<span style = "background-color:#dfd">  if (!_board.isValidState()) {
+    return false;</span>
+  }
+
+<span style = "background-color:#dfd">  const auto&amp; row_blocks = _board.rowBlocks();
   const auto&amp; column_blocks = _board.columnBlocks();
   const auto&amp; box_blocks = _board.boxBlocks();</span>
 
@@ -95,7 +103,7 @@ CScene::CScene(int index, IPuzzleGenerator* puzzle_generator, const ISceneRender
           !box_blocks.at(static_cast&lt;size_t&gt;(row / BOX_SIZE))
                .at(static_cast&lt;size_t&gt;(col / BOX_SIZE))
                .isValid()) {
-<span style = "background-color:#dfd">        return false;</span>
+<span style = "background-color:#fdd">        return false;</span>
       }
 <span style = "background-color:#dfd">    }
   }</span>
@@ -165,6 +173,7 @@ CScene::CScene(int index, IPuzzleGenerator* puzzle_generator, const ISceneRender
 <span style = "background-color:#dfd">    file_stream &gt;&gt; point.x &gt;&gt; point.y &gt;&gt; preValue &gt;&gt; curValue;
     _vCommand.emplace_back(this, point, preValue, curValue);
   }
+  _board.refreshValidationState();
   return true;
 }</span>
 
@@ -245,7 +254,8 @@ CScene::CScene(int index, IPuzzleGenerator* puzzle_generator, const ISceneRender
 }</span>
 
 <span style = "background-color:#dfd">void CScene::generate() {
-  _puzzle_generator-&gt;GenerateSolvedBoard(_board);</span>
+  _puzzle_generator-&gt;GenerateSolvedBoard(_board);
+  _board.refreshValidationState();</span>
 
 <span style = "background-color:#dfd">  assert(isComplete());
 }</span>
